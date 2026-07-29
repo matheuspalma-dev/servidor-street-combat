@@ -23,6 +23,7 @@ public class Mapa {
         this.nome = nome;
         carregarInimigos();
         carregarItens();
+        carregarBarreiras();
     }
 
     public void carregarInimigos(){
@@ -118,10 +119,6 @@ public class Mapa {
         Item item = itens.get(id);
         if (item != null) {
             item.levarDano(dano);
-            if (item.estaMorto()){
-                removerItem(id);
-
-            }
         }
     }
 

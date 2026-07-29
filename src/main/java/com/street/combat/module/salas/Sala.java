@@ -232,6 +232,7 @@ public class Sala {
             if (jogador != null) {
                 String nomeItem = mapa.getItens().get(id).getNome();
                 jogadorReceberAtributoExtra(jogador, nomeItem);
+                mapa.removerItem(id);
             }
         }
         atualizarItens();

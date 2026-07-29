@@ -19,10 +19,15 @@ public class Inimigo {
     private int y;
     private String direcao;
     private int velocidade;
+    private int quantidadeMovimentos;
+    private int direcaoAleatoria;
+
+    private final Random random = new Random();
 
     public Inimigo(String nome) {
         this.nome = nome;
         this.direcao = "esquerda";
+        this.quantidadeMovimentos = 5;
 
         switch (nome) {
             case "david":
@@ -74,23 +79,29 @@ public class Inimigo {
     }
 
     public void mover(int jogadorX, int jogadorY) {
-        if (this.y < jogadorY){
-            this.y += velocidade;
-        } else if (this.y > jogadorY){
-            this.y -= velocidade;
-        }
-
         int distanciaX = Math.abs(this.x - jogadorX);
+        int distanciaY = Math.abs(this.y - jogadorY);
+        int distanciaTotal = distanciaX + distanciaY;
 
-        if (this.x < jogadorX && distanciaX > 10){
-            this.x += velocidade;
-        } else if (this.x > jogadorX && distanciaX > 10){
-            this.x -= velocidade;
+        if (distanciaTotal > 400){
+            moverAleatoriamente();
+        } else {
+            if (this.y < jogadorY) {
+                this.y += velocidade;
+            } else if (this.y > jogadorY) {
+                this.y -= velocidade;
+            }
+
+            if (this.x < jogadorX && distanciaX > 10) {
+                this.x += velocidade;
+            } else if (this.x > jogadorX && distanciaX > 10) {
+                this.x -= velocidade;
+            }
         }
-
         atualizarDirecao(jogadorX);
 
-        /*  testar depois essa logica
+        /*
+        testar depois essa logica
         double dx = jogadorX - x;
         double dy = jogadorY - y;
 
@@ -104,7 +115,26 @@ public class Inimigo {
     }
 
     private void moverAleatoriamente(){
+        if (quantidadeMovimentos <= 0){
+            direcaoAleatoria = random.nextInt(4);
+            quantidadeMovimentos = 5;
+        }
 
+        switch (direcaoAleatoria) {
+            case 0: // cima
+                this.y -= velocidade;
+                break;
+            case 1: // baixo
+                this.y += velocidade;
+                break;
+            case 2: // esquerda
+                this.x -= velocidade;
+                break;
+            case 3: // direita
+                this.x += velocidade;
+                break;
+        }
+        quantidadeMovimentos -= 1;
     }
 
     private void atualizarDirecao(int jogadorX) {
