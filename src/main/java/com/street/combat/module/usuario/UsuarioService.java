@@ -42,6 +42,7 @@ public class UsuarioService {
     private Usuario criarUsuario(UsuarioRequestDTO usuarioRequestDTO){
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioRequestDTO.getNome());
+        usuario.setEmail(usuarioRequestDTO.getEmail());
         String senhaCriptografada = passwordEncoder.encode(usuarioRequestDTO.getSenha());
         usuario.setSenha(senhaCriptografada);
         usuario.setSenha(usuarioRequestDTO.getSenha());
