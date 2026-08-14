@@ -45,7 +45,6 @@ public class UsuarioService {
         usuario.setEmail(usuarioRequestDTO.getEmail());
         String senhaCriptografada = passwordEncoder.encode(usuarioRequestDTO.getSenha());
         usuario.setSenha(senhaCriptografada);
-        usuario.setSenha(usuarioRequestDTO.getSenha());
         usuario.setBanido(false);
         return usuario;
     }
