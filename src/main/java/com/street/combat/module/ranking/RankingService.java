@@ -1,10 +1,12 @@
 package com.street.combat.module.ranking;
 
-import com.street.combat.module.ranking.dto.RankingResponseDTO;
+import com.street.combat.module.ranking.dto.request.RankingRequestDTO;
+import com.street.combat.module.ranking.dto.response.RankingResponseDTO;
+import com.street.combat.module.usuario.Usuario;
+import com.street.combat.module.usuario.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -12,8 +14,34 @@ public class RankingService {
 
     private final RankingRepository rankingRepository;
 
-    public RankingService(RankingRepository rankingRepository) {
+    public RankingService(
+            RankingRepository rankingRepository
+    )
+    {
         this.rankingRepository = rankingRepository;
+    }
+
+    public void adicionarNoRanking(Usuario usuario){
+        Ranking ranking = new Ranking();
+        ranking.setJogador(usuario);
+        ranking.setPontos_mapa_1(0);
+        ranking.setPontos_mapa_2(0);
+        ranking.setPontos_mapa_3(0);
+    }
+
+    public void atualizarRanking(RankingRequestDTO rankingRequestDTO) {
+        Ranking ranking = rankingRepository.findByJogadorId(rankingRequestDTO.id())
+                    .orElseThrow(() -> new RuntimeException("Ranking não encontrado"));
+
+        if (rankingRequestDTO.mapa() == 1) {
+            ranking.setPontos_mapa_1(rankingRequestDTO.pontos());
+        } else if (rankingRequestDTO.mapa() == 2) {
+            ranking.setPontos_mapa_2(rankingRequestDTO.pontos());
+        } else {
+            ranking.setPontos_mapa_3(rankingRequestDTO.pontos());
+        }
+
+        rankingRepository.save(ranking);
     }
 
     public List<RankingResponseDTO> rankingMapa1() {
@@ -55,22 +83,6 @@ public class RankingService {
         return rankingResponseDTOList;
     }
 
-    public List<RankingResponseDTO> rankingPVP() {
-        List<Ranking> ranking = new ArrayList<>();
-        ranking.addAll(rankingRepository.findAll());
-
-        List<RankingResponseDTO> rankingResponseDTOList = new ArrayList<>(ranking.size());
-        for (Ranking r : ranking) {
-            if (r.getJogador().isBanido()){
-                continue;
-            }
-            RankingResponseDTO rankingResponseDTO = devolverRanking(r, 4);
-            rankingResponseDTOList.add(rankingResponseDTO);
-        }
-
-        return rankingResponseDTOList;
-    }
-
     private RankingResponseDTO devolverRanking(Ranking ranking, int mapa) {
         RankingResponseDTO rankingResponseDTO = new RankingResponseDTO();
         rankingResponseDTO.setNome(ranking.getJogador().getNome());
@@ -78,10 +90,8 @@ public class RankingService {
             rankingResponseDTO.setPontos(ranking.getPontos_mapa_1());
         } else if (mapa == 2){
             rankingResponseDTO.setPontos(ranking.getPontos_mapa_2());
-        } else if (mapa == 3){
+        } else if (mapa == 3) {
             rankingResponseDTO.setPontos(ranking.getPontos_mapa_3());
-        } else if (mapa == 4){
-            rankingResponseDTO.setPontos(ranking.getPontos_pvp());
         } else {
             System.out.println("Algo está com erro");
         }

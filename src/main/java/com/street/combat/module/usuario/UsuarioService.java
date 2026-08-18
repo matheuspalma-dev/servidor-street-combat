@@ -1,5 +1,6 @@
 package com.street.combat.module.usuario;
 
+import com.street.combat.module.ranking.RankingService;
 import com.street.combat.module.usuario.dto.UsuarioRequestDTO;
 import com.street.combat.module.usuario.dto.UsuarioResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,11 +11,17 @@ import org.springframework.stereotype.Service;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final RankingService rankingService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            RankingService rankingService
+    )
+    {
         this.usuarioRepository = usuarioRepository;
+        this.rankingService = rankingService;
     }
 
     public UsuarioResponseDTO cadastro(UsuarioRequestDTO usuarioRequestDTO){
@@ -24,6 +31,7 @@ public class UsuarioService {
         } else if (usuario.getNome().contains("67") || usuario.getNome().contains("42")){
             usuario.setBanido(true);
         }
+        rankingService.adicionarNoRanking(usuario);
         usuarioRepository.save(usuario);
         return devolverUsuario(usuario);
     }

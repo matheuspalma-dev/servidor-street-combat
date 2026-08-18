@@ -1,11 +1,9 @@
 package com.street.combat.module.ranking;
 
-import com.street.combat.module.ranking.dto.RankingResponseDTO;
+import com.street.combat.module.ranking.dto.request.RankingRequestDTO;
+import com.street.combat.module.ranking.dto.response.RankingResponseDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -35,8 +33,8 @@ public class RankingController {
         return ResponseEntity.ok(rankingService.rankingMapa3());
     }
 
-    @GetMapping("/pvp")
-    public ResponseEntity<List<RankingResponseDTO>> rankingPVP(){
-        return ResponseEntity.ok(rankingService.rankingPVP());
+    @PostMapping("/atualizar")
+    public void atualizarRanking(RankingRequestDTO rankingRequestDTO){
+        rankingService.atualizarRanking(rankingRequestDTO);
     }
 }

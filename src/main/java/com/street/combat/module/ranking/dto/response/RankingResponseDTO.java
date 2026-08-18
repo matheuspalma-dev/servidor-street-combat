@@ -1,4 +1,4 @@
-package com.street.combat.module.ranking.dto;
+package com.street.combat.module.ranking.dto.response;
 
 import lombok.Setter;
 

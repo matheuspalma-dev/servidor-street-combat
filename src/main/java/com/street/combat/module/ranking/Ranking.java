@@ -16,12 +16,10 @@ public class Ranking {
     @JoinColumn(name = "jogador_id", referencedColumnName = "id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Usuario jogador;
-    @Column(name = "pontos_mapa_1", nullable = false)
+    @Column(name = "pontos_mapa_1", nullable = true)
     private int pontos_mapa_1;
-    @Column(name = "pontos_mapa_2", nullable = false)
+    @Column(name = "pontos_mapa_2", nullable = true)
     private int pontos_mapa_2;
-    @Column(name = "pontos_mapa_3", nullable = false)
+    @Column(name = "pontos_mapa_3", nullable = true)
     private int pontos_mapa_3;
-    @Column(name = "pontos_pvp", nullable = false)
-    private int pontos_pvp;
 }
