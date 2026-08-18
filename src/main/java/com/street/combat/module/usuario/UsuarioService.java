@@ -33,8 +33,8 @@ public class UsuarioService {
         } else if (usuario.getNome().contains("67") || usuario.getNome().contains("42")){
             usuario.setBanido(true);
         }
-        rankingService.adicionarNoRanking(usuario);
         usuarioRepository.save(usuario);
+        rankingService.adicionarNoRanking(usuario);
         return devolverUsuario(usuario);
     }
 
