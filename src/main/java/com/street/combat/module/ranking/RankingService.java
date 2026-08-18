@@ -22,11 +22,15 @@ public class RankingService {
     }
 
     public void adicionarNoRanking(Usuario usuario){
+        if (rankingRepository.existsByJogadorId(usuario.getId())) {
+            return;
+        }
         Ranking ranking = new Ranking();
         ranking.setJogador(usuario);
         ranking.setPontos_mapa_1(0);
         ranking.setPontos_mapa_2(0);
         ranking.setPontos_mapa_3(0);
+        rankingRepository.save(ranking);
     }
 
     public void atualizarRanking(RankingRequestDTO rankingRequestDTO) {
@@ -53,7 +57,8 @@ public class RankingService {
             RankingResponseDTO rankingResponseDTO = devolverRanking(r, 1);
             rankingResponseDTOList.add(rankingResponseDTO);
         }
-
+        System.out.println(ranking);
+        System.out.println(rankingResponseDTOList);
         return rankingResponseDTOList;
     }
 
