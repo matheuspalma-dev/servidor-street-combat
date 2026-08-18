@@ -34,7 +34,7 @@ public class RankingController {
     }
 
     @PostMapping("/atualizar")
-    public void atualizarRanking(@RequestBody  RankingRequestDTO rankingRequestDTO){
+    public void atualizarRanking(@RequestBody RankingRequestDTO rankingRequestDTO){
         rankingService.atualizarRanking(rankingRequestDTO);
     }
 }
