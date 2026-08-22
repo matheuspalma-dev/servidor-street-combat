@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Setter
 public class Sala {
 
-    private final String id;
+    private String id;
     //depois eu removo
     private Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private Map<String, Jogador> jogadores = new ConcurrentHashMap<>();
@@ -48,6 +48,7 @@ public class Sala {
 
     // Funções relacionadas a salas
     public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador) throws IOException {
+        System.out.println("Adicionando jogador ma sala com id: " + id + ", personagem: " + personagem + ", nome: " + nomeJogador + " e mapa: " + this.mapa.getNome());
         Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador);
         jogadores.put(id, jogador);
         sessions.put(id, session);

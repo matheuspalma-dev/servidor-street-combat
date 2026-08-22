@@ -64,6 +64,7 @@ public class Decisao extends TextWebSocketHandler {
                 String mapa = (String) mensagemRecebida.get("mapa");
                 String personagem = (String) mensagemRecebida.get("personagem");
                 String nomeCriador = (String) mensagemRecebida.get("nomeCriador");
+                System.out.println("Criando sala no decisão com mapa: " + mapa + ", personagem: " + personagem + ", nome do criador: " + nomeCriador);
                 gerenciadorSalas.criarSala(mapa, sessionSegura, personagem, nomeCriador);
                 atualizarSalas();
                 break;
