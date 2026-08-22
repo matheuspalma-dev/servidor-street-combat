@@ -1,6 +1,8 @@
 package com.street.combat.module.salas;
 
 import com.street.combat.module.Inimigos.Inimigo;
+import com.street.combat.module.jogador.AtaqueRamona;
+import com.street.combat.module.jogador.AtaqueScott;
 import com.street.combat.module.jogador.AtributosExtra;
 import com.street.combat.module.jogador.Jogador;
 import com.street.combat.module.mapa.Mapa;
@@ -12,9 +14,7 @@ import org.springframework.web.socket.WebSocketSession;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,6 +31,7 @@ public class Sala {
     private final Mapa mapa;
     private final ObjectMapper tradutor = new ObjectMapper();
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final Random random = new Random();
 
     @SneakyThrows
     public Sala(String nomeMapa, String nomeCriador) {
@@ -46,8 +47,8 @@ public class Sala {
     }
 
     // Funções relacionadas a salas
-    public void adicionarJogador(WebSocketSession session, String id, String personagem) throws IOException {
-        Jogador jogador = new Jogador(personagem, id, this.mapa.getNome());
+    public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador) throws IOException {
+        Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador);
         jogadores.put(id, jogador);
         sessions.put(id, session);
         atualizarJogadores();
@@ -69,6 +70,33 @@ public class Sala {
         Jogador jogador = jogadores.get(id);
         jogador.mover(x, y, direcao);
         atualizarJogadores();
+    }
+
+    public void jogadorTentouGolpe(String id) throws IOException {
+        Jogador jogador = jogadores.get(id);
+        if (jogador != null){
+            String golpe = escolherAtaque(jogador.getPersonagem());
+            Map<String, Object> respostaServidor = new HashMap<>();
+            respostaServidor.put("tipo", "jogadorTentouGolpe");
+            respostaServidor.put("golpe", golpe);
+            respostaServidor.put("idJogador", id);
+            for(WebSocketSession session : sessions.values()){
+                if (session.isOpen()){
+                    session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+                }
+            }
+        }
+    }
+
+    private String escolherAtaque(String personagem){
+        if (personagem.equals("feminimo")){
+            AtaqueRamona[] ataques = AtaqueRamona.values();
+            return ataques[random.nextInt(ataques.length)].name();
+        } else if (personagem.equals("masculino")){
+            AtaqueScott[] ataques = AtaqueScott.values();
+            return ataques[random.nextInt(ataques.length)].name();
+        }
+        return null;
     }
 
     public void jogadorLevouDano(String id, int dano) throws IOException {
@@ -205,7 +233,7 @@ public class Sala {
                 }
             }
             if (alvo != null) {
-                inimigo.mover(alvo.getX(), alvo.getY());
+                inimigo.mover(alvo.getX(), alvo.getY(), alvo.getDirecao());
             }
 
         }

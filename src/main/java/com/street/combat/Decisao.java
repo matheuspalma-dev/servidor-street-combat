@@ -54,9 +54,12 @@ public class Decisao extends TextWebSocketHandler {
         Map<String, Object> mensagemRecebida = tradutor.readValue(message.getPayload(), Map.class);
         String tipo = (String) mensagemRecebida.get("tipo");
 
-        switch (tipo) {
-            case "enviarId":
+        if (tipo == null) {
+            System.out.println("Tipo de mensagem não especificado.");
+            return;
+        }
 
+        switch (tipo) {
             case "criarSala":
                 String mapa = (String) mensagemRecebida.get("mapa");
                 String personagem = (String) mensagemRecebida.get("personagem");
@@ -67,7 +70,8 @@ public class Decisao extends TextWebSocketHandler {
             case "entrarSala":
                 String idSala = (String) mensagemRecebida.get("idSala");
                 String personagemEntrar = (String) mensagemRecebida.get("personagem");
-                gerenciadorSalas.entrarSala(idSala, sessionSegura, personagemEntrar);
+                String nomeJogador = (String) mensagemRecebida.get("nomeJogador");
+                gerenciadorSalas.entrarSala(idSala, sessionSegura, personagemEntrar, nomeJogador);
                 atualizarSalas();
                 break;
             case "sairDaSala":
@@ -85,6 +89,9 @@ public class Decisao extends TextWebSocketHandler {
                 int y = ((Number) mensagemRecebida.get("y")).intValue();
                 String direcao = (String) mensagemRecebida.get("direcao");
                 gerenciadorJogador.jogadorAndou(sessionSegura, x, y, direcao);
+                break;
+            case "tentarAtacar":
+                gerenciadorJogador.tentativaGolpe(sessionSegura);
                 break;
             case "golpearInimigo":
                 String idInimigo = (String) mensagemRecebida.get("idInimigo");
@@ -120,7 +127,8 @@ public class Decisao extends TextWebSocketHandler {
         Map<String, Object> respostaServidor = new HashMap<>();
         respostaServidor.put("tipo", "atualizarSalasOnline");
         respostaServidor.put("salas", gerenciadorSalas.getSalasOnline().keySet());
-        for(WebSocketSession session : sessions.values()){            if (session.isOpen()) {
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
                 session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
             }
         }

@@ -21,15 +21,15 @@ public class GerenciadorSalas {
 
     public void criarSala(String mapa, WebSocketSession session, String personagem, String nomeCriador) throws IOException {
         Sala novaSala = new Sala(mapa, nomeCriador);
-        novaSala.adicionarJogador(session ,session.getId(), personagem);
+        novaSala.adicionarJogador(session ,session.getId(), personagem, nomeCriador);
         jogadoresParaSala.put(session.getId(), novaSala.getId());
         salasOnline.put(novaSala.getId(), novaSala);
     }
 
-    public void entrarSala(String idSala, WebSocketSession session, String personagem) throws IOException {
+    public void entrarSala(String idSala, WebSocketSession session, String personagem, String nomeJogador) throws IOException {
         Sala sala = salasOnline.get(idSala);
         if (sala != null){
-            sala.adicionarJogador(session, session.getId(), personagem);
+            sala.adicionarJogador(session, session.getId(), personagem, nomeJogador);
             jogadoresParaSala.put(session.getId(), sala.getId());
         }
     }

@@ -28,4 +28,11 @@ public class GerenciadorJogador {
             sala.jogadorLevouDano(session.getId(), dano);
         }
     }
+
+    public void tentativaGolpe(WebSocketSession session) throws IOException {
+        Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
+        if (sala != null) {
+            sala.jogadorTentouGolpe(session.getId());
+        }
+    }
 }

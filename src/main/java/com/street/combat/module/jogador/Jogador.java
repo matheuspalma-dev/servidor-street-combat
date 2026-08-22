@@ -11,6 +11,7 @@ import java.util.Set;
 @Setter
 public class Jogador {
     private String id;
+    private final String nomeJogador;
     private final String personagem;
     private String direcao;
     private int vida;
@@ -20,8 +21,9 @@ public class Jogador {
     private int dano;
     private Set<AtributosExtra> atributosExtras = EnumSet.noneOf(AtributosExtra.class);
 
-    public Jogador(String personagem, String id, String mapa) {
+    public Jogador(String personagem, String id, String mapa, String nomeJogador) {
         this.id = id;
+        this.nomeJogador = nomeJogador;
         this.personagem = personagem;
         this.direcao = "direita";
         this.x = 200;

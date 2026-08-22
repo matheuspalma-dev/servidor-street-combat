@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.util.Random;
 
+import static java.lang.Math.abs;
+
 @Getter
 @Setter
 public class Inimigo {
@@ -78,24 +80,45 @@ public class Inimigo {
         this.y = new Random().nextInt((500 - 100) + 1) + 100;
     }
 
-    public void mover(int jogadorX, int jogadorY) {
-        int distanciaX = Math.abs(this.x - jogadorX);
-        int distanciaY = Math.abs(this.y - jogadorY);
+    public void mover(int jogadorX, int jogadorY, String direcaoJogador) {
+        boolean moveuX = false;
+        int distanciaX = abs(this.x - jogadorX);
+        int distanciaY = abs(this.y - jogadorY);
         int distanciaTotal = distanciaX + distanciaY;
 
         if (distanciaTotal > 400){
             moverAleatoriamente();
         } else {
             if (this.y < jogadorY) {
-                this.y += velocidade;
+                if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
+                    if (direcaoJogador.equals("esquerda")){
+                        this.x += velocidade;
+                    } else {
+                        this.x -= velocidade;
+                    }
+                    moveuX = true;
+                } else {
+                    this.y += velocidade;
+                }
             } else if (this.y > jogadorY) {
-                this.y -= velocidade;
+                if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
+                    if (direcaoJogador.equals("esquerda")){
+                        this.x += velocidade;
+                    } else {
+                        this.x -= velocidade;
+                    }
+                    moveuX = true;
+                } else {
+                    this.y -= velocidade;
+                }
             }
 
-            if (this.x < jogadorX && distanciaX > 10) {
-                this.x += velocidade;
-            } else if (this.x > jogadorX && distanciaX > 10) {
-                this.x -= velocidade;
+            if (!moveuX) {
+                if (this.x < jogadorX && distanciaX > 10) {
+                    this.x += velocidade;
+                } else if (this.x > jogadorX && distanciaX > 10) {
+                    this.x -= velocidade;
+                }
             }
         }
         atualizarDirecao(jogadorX);
