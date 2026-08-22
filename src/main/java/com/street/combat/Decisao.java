@@ -70,6 +70,7 @@ public class Decisao extends TextWebSocketHandler {
             case "entrarSala":
                 System.out.println("Fui chamado dois");
                 String idSala = (String) mensagemRecebida.get("idSala");
+                System.out.println("ID da sala recebida: " + idSala);
                 String personagemEntrar = (String) mensagemRecebida.get("personagem");
                 String nomeJogador = (String) mensagemRecebida.get("nomeJogador");
                 gerenciadorSalas.entrarSala(idSala, sessionSegura, personagemEntrar, nomeJogador);
