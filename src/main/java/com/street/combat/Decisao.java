@@ -55,10 +55,13 @@ public class Decisao extends TextWebSocketHandler {
         String tipo = (String) mensagemRecebida.get("tipo");
 
         switch (tipo) {
+            case "enviarId":
+
             case "criarSala":
                 String mapa = (String) mensagemRecebida.get("mapa");
                 String personagem = (String) mensagemRecebida.get("personagem");
-                gerenciadorSalas.criarSala(mapa, sessionSegura, personagem);
+                String nomeCriador = (String) mensagemRecebida.get("nomeCriador");
+                gerenciadorSalas.criarSala(mapa, sessionSegura, personagem, nomeCriador);
                 atualizarSalas();
                 break;
             case "entrarSala":

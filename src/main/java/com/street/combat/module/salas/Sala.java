@@ -33,8 +33,8 @@ public class Sala {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     @SneakyThrows
-    public Sala(String nomeMapa) {
-        this.id = UUID.randomUUID().toString();
+    public Sala(String nomeMapa, String nomeCriador) {
+        this.id = nomeCriador;
         this.mapa = new Mapa(nomeMapa);
         executor.scheduleAtFixedRate(() -> {
             try {

@@ -19,8 +19,8 @@ public class GerenciadorSalas {
     private Map<String, String> jogadoresParaSala = new ConcurrentHashMap<>();
     private final ObjectMapper tradutor = new ObjectMapper();
 
-    public void criarSala(String mapa, WebSocketSession session, String personagem) throws IOException {
-        Sala novaSala = new Sala(mapa);
+    public void criarSala(String mapa, WebSocketSession session, String personagem, String nomeCriador) throws IOException {
+        Sala novaSala = new Sala(mapa, nomeCriador);
         novaSala.adicionarJogador(session ,session.getId(), personagem);
         jogadoresParaSala.put(session.getId(), novaSala.getId());
         salasOnline.put(novaSala.getId(), novaSala);
