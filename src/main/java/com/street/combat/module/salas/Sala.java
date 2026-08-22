@@ -44,11 +44,11 @@ public class Sala {
                 e.printStackTrace();
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
+        System.out.println("Mapa iniciado");
     }
 
     // Funções relacionadas a salas
     public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador) throws IOException {
-        System.out.println("Adicionando jogador ma sala com id: " + id + ", personagem: " + personagem + ", nome: " + nomeJogador + " e mapa: " + this.mapa.getNome());
         Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador);
         jogadores.put(id, jogador);
         sessions.put(id, session);

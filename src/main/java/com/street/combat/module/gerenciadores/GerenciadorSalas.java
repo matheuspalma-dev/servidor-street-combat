@@ -20,7 +20,6 @@ public class GerenciadorSalas {
     private final ObjectMapper tradutor = new ObjectMapper();
 
     public void criarSala(String mapa, WebSocketSession session, String personagem, String nomeCriador) throws IOException {
-        System.out.println("Criando sala com gerenciador com mapa: " + mapa + ", jogador: " + nomeCriador + "id session: " + session.getId() + " personagem: " + personagem);
         Sala novaSala = new Sala(mapa, nomeCriador);
         novaSala.adicionarJogador(session ,session.getId(), personagem, nomeCriador);
         jogadoresParaSala.put(session.getId(), novaSala.getId());
@@ -28,6 +27,7 @@ public class GerenciadorSalas {
     }
 
     public void entrarSala(String idSala, WebSocketSession session, String personagem, String nomeJogador) throws IOException {
+        System.out.println("Fui chamado");
         Sala sala = salasOnline.get(idSala);
         if (sala != null){
             sala.adicionarJogador(session, session.getId(), personagem, nomeJogador);
