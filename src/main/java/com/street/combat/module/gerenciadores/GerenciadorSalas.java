@@ -27,7 +27,6 @@ public class GerenciadorSalas {
     }
 
     public void entrarSala(String idSala, WebSocketSession session, String personagem, String nomeJogador) throws IOException {
-        System.out.println("Fui chamado");
         Sala sala = salasOnline.get(idSala);
         if (sala != null){
             sala.adicionarJogador(session, session.getId(), personagem, nomeJogador);

@@ -50,7 +50,7 @@ public class Sala {
     // Funções relacionadas a salas
     public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador) throws IOException {
         Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador);
-        jogadores.put(id, jogador);
+        jogadores.put(nomeJogador, jogador);
         sessions.put(id, session);
         atualizarJogadores();
         atualizarItens();
