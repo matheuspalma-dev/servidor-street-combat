@@ -76,8 +76,8 @@ public class Inimigo {
                 break;
         }
 
-        this.x = new Random().nextInt((500 - 100) + 1) + 100;
-        this.y = new Random().nextInt((500 - 100) + 1) + 100;
+        this.x = 650;
+        this.y = 1000;
     }
 
     public void mover(int jogadorX, int jogadorY, String direcaoJogador) {
