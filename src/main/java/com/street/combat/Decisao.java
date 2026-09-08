@@ -41,7 +41,6 @@ public class Decisao extends TextWebSocketHandler {
         Map<String, Object> respostaServidor = new HashMap<>();
         respostaServidor.put("tipo", "salasOnline");
         respostaServidor.put("salas", gerenciadorSalas.getSalasOnline().keySet());
-        respostaServidor.put("idSessao", sessionSegura.getId());
         session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
     }
 

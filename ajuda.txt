@@ -1,0 +1,11 @@
+ver meu ip:
+hostname -I
+
+liberar porta no firewall:
+sudo ufw allow 8080/tcp
+
+como remover a porta do firewall:
+sudo ufw delete allow 8080/tcp
+
+verificar se deu certo:
+sudo ufw status

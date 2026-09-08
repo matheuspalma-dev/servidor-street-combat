@@ -44,7 +44,6 @@ public class Sala {
                 e.printStackTrace();
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
-        System.out.println("Mapa iniciado");
     }
 
     // Funções relacionadas a salas
@@ -54,6 +53,17 @@ public class Sala {
         sessions.put(id, session);
         atualizarJogadores();
         atualizarItens();
+    }
+
+    public void atualizarJogadores() throws IOException {
+        Map<String, Object> respostaServidor = new HashMap<>();
+        respostaServidor.put("tipo", "atualizarJogadores");
+        respostaServidor.put("jogadores", jogadores);
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+            }
+        }
     }
 
     public void removerDaSala(String id) throws IOException {
@@ -90,7 +100,7 @@ public class Sala {
     }
 
     private String escolherAtaque(String personagem){
-        if (personagem.equals("feminimo")){
+        if (personagem.equals("feminino")){
             AtaqueRamona[] ataques = AtaqueRamona.values();
             return ataques[random.nextInt(ataques.length)].name();
         } else if (personagem.equals("masculino")){
@@ -122,17 +132,6 @@ public class Sala {
             }
         }
         return 0;
-    }
-
-    public void atualizarJogadores() throws IOException {
-        Map<String, Object> respostaServidor = new HashMap<>();
-        respostaServidor.put("tipo", "atualizarJogadores");
-        respostaServidor.put("jogadores", jogadores);
-        for(WebSocketSession session : sessions.values()){
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
-            }
-        }
     }
 
     private void jogadorReceberAtributoExtra(Jogador jogador, String nomeItem){

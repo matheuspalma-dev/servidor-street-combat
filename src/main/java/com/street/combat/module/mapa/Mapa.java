@@ -22,8 +22,8 @@ public class Mapa {
     public Mapa(String nome) {
         this.nome = nome;
         carregarInimigos();
-        carregarItens();
-        carregarBarreiras();
+        //carregarItens();
+        //carregarBarreiras();
     }
 
     public void carregarInimigos(){

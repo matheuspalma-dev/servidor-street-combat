@@ -1,6 +1,9 @@
 package com.street.combat.config;
 
 import com.street.combat.Decisao;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -20,5 +23,10 @@ public class WebSockConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(decisao, "/jogo")
                 .setAllowedOrigins("*");
+    }
+
+    @Bean
+    public PolicyFactory htmlPolicy(){
+        return Sanitizers.FORMATTING.and(Sanitizers.BLOCKS);
     }
 }

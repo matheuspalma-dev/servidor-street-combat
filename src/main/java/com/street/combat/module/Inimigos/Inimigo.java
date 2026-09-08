@@ -76,8 +76,8 @@ public class Inimigo {
                 break;
         }
 
-        this.x = 650;
-        this.y = 1000;
+        this.x = 200;
+        this.y = 400;
     }
 
     public void mover(int jogadorX, int jogadorY, String direcaoJogador) {
