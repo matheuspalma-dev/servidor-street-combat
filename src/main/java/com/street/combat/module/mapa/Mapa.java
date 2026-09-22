@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Setter
@@ -18,41 +19,56 @@ public class Mapa {
     private Map<String, Inimigo> inimigos = new ConcurrentHashMap<>();
     private Map<String, Item> itens = new ConcurrentHashMap<>();
     private Map<String, Barreira> barreiras = new ConcurrentHashMap<>();
+    private final boolean mapaLutaBoss;
 
-    public Mapa(String nome) {
+    public Mapa(String nome, boolean mapaLutaBoss) {
         this.nome = nome;
-        carregarInimigos();
-        //carregarItens();
-        //carregarBarreiras();
+        this.mapaLutaBoss = mapaLutaBoss;
+        if (!mapaLutaBoss) {
+            //carregarItens();
+            //carregarBarreiras();
+        } else{
+
+        }
     }
 
-    public void carregarInimigos(){
+    public void carregarInimigos(int grupo){
         switch (this.nome){
             case "cidade":
-                int Quantidadeinimigos = 10;
-                int davids = 3;
-                int raymonds = 2;
-                int ricks = 2;
-                int stellas = 2;
-
-                for (int i = 0; i < Quantidadeinimigos; i++){
+                int posicaoInicialBase = 1600;
+                int larguraGrupo = 750;
+                int espacoEntreGrupos = 600;
+                int quantidadeInimigosNoGrupo = ThreadLocalRandom.current().nextInt(3, 6);
+                int minX = posicaoInicialBase + grupo * (larguraGrupo + espacoEntreGrupos);
+                int maxX = minX + larguraGrupo;
+                int[] posicoesAliados = new int[quantidadeInimigosNoGrupo];
+                for (int loop = 0; loop < quantidadeInimigosNoGrupo; loop++){
+                    int sorteio = ThreadLocalRandom.current().nextInt(1, 4);
                     String id = UUID.randomUUID().toString();
-                    if (davids > 0){
-                        inimigos.put(id, new Inimigo("david"));
-                        davids -= 1;
-                    } else if (raymonds > 0) {
-                        inimigos.put(id, new Inimigo("raymond"));
-                        raymonds -= 1;
-                    } else if (ricks > 0) {
-                        inimigos.put(id, new Inimigo("rick"));
-                        ricks -= 1;
-                    } else if (stellas > 0) {
-                        inimigos.put(id, new Inimigo("stella"));
-                        stellas -= 1;
-                    } else {
-                        inimigos.put(id, new Inimigo("LucasLee"));
+                    Inimigo inimigo;
+
+                    switch (sorteio) {
+                        case 1:
+                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX);
+                            break;
+                        case 2:
+                            inimigo = new Inimigo("raymond", posicoesAliados, minX, maxX);
+                            break;
+                        case 3:
+                            inimigo = new Inimigo("rick", posicoesAliados, minX, maxX);
+                            break;
+                        case 4:
+                            inimigo = new Inimigo("stella", posicoesAliados, minX, maxX);
+                            break;
+                        default:
+                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX);
+                            break;
                     }
+
+                    posicoesAliados[loop] = inimigo.getX();
+                    inimigos.put(id, inimigo);
                 }
+
                 break;
             case "prisão":
             case "quintal":

@@ -15,7 +15,7 @@ public class GerenciadorJogador {
         this.gerenciadorSalas = gerenciadorSalas;
     }
 
-    public void jogadorAndou(WebSocketSession session, int x, int y, String direcao) throws IOException {
+    public void jogadorAndou(WebSocketSession session, int x, int y, boolean direcao) throws IOException {
         Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
         if (sala != null) {
             sala.jogadorAndou(session.getId(), x, y, direcao);
@@ -29,10 +29,10 @@ public class GerenciadorJogador {
         }
     }
 
-    public void tentativaGolpe(WebSocketSession session) throws IOException {
+    public void tentativaGolpe(WebSocketSession session, Object golpe) throws IOException {
         Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
         if (sala != null) {
-            sala.jogadorTentouGolpe(session.getId());
+            sala.jogadorTentouGolpe(session.getId(), golpe);
         }
     }
 }

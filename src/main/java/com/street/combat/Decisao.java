@@ -3,6 +3,8 @@ package com.street.combat;
 import com.street.combat.module.gerenciadores.GerenciadorInimigos;
 import com.street.combat.module.gerenciadores.GerenciadorJogador;
 import com.street.combat.module.gerenciadores.GerenciadorSalas;
+import com.street.combat.module.jogador.AtaqueRamona;
+import com.street.combat.module.jogador.AtaqueScott;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -63,6 +65,7 @@ public class Decisao extends TextWebSocketHandler {
                 String mapa = (String) mensagemRecebida.get("mapa");
                 String personagem = (String) mensagemRecebida.get("personagem");
                 String nomeCriador = (String) mensagemRecebida.get("nomeCriador");
+                System.out.println("Mapa: " + mapa + ", Personagem: " + personagem + ", Nome do Criador: " + nomeCriador);
                 gerenciadorSalas.criarSala(mapa, sessionSegura, personagem, nomeCriador);
                 atualizarSalas();
                 break;
@@ -86,15 +89,30 @@ public class Decisao extends TextWebSocketHandler {
             case "andar":
                 int x = ((Number) mensagemRecebida.get("x")).intValue();
                 int y = ((Number) mensagemRecebida.get("y")).intValue();
-                String direcao = (String) mensagemRecebida.get("direcao");
+                boolean direcao = (boolean) mensagemRecebida.get("direcao");
                 gerenciadorJogador.jogadorAndou(sessionSegura, x, y, direcao);
                 break;
             case "tentarAtacar":
-                gerenciadorJogador.tentativaGolpe(sessionSegura);
+                String personagemJogador = (String) mensagemRecebida.get("personagem");
+                Object golpe;
+                if (personagemJogador.equals("feminino")){
+                    golpe = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
+                } else { // masculino
+                    golpe = AtaqueScott.valueOf((String) mensagemRecebida.get("golpe"));
+                }
+                gerenciadorJogador.tentativaGolpe(sessionSegura, golpe);
                 break;
             case "golpearInimigo":
                 String idInimigo = (String) mensagemRecebida.get("idInimigo");
-                gerenciadorInimigos.levouDano(sessionSegura, idInimigo);
+                boolean masculino = (boolean) mensagemRecebida.get("masculino");
+                Object golpeUsado;
+
+                if (masculino){
+                    golpeUsado = AtaqueScott.valueOf((String) mensagemRecebida.get("golpe"));
+                } else {
+                    golpeUsado = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
+                }
+                gerenciadorInimigos.levouDano(sessionSegura, idInimigo, golpeUsado);
                 break;
             case "levarDano":
                 int dano = ((Number) mensagemRecebida.get("dano")).intValue();
@@ -107,6 +125,8 @@ public class Decisao extends TextWebSocketHandler {
             case "golpearBarreira":
                 String idBarreira = (String) mensagemRecebida.get("idBarreira");
                 gerenciadorInimigos.barreiraLevouDano(sessionSegura, idBarreira);
+                break;
+            case "lutarComBoss":
                 break;
             default:
                 System.out.println("deu ruim em algo ai");

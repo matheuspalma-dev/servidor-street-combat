@@ -13,9 +13,10 @@ public class Jogador {
     private String id;
     private final String nomeJogador;
     private final String personagem;
-    private String direcao;
+    private boolean direcao;
     private int vida;
     private int vidaMaxima;
+    private int defesa;
     private int x;
     private int y;
     private int dano;
@@ -25,24 +26,27 @@ public class Jogador {
         this.id = id;
         this.nomeJogador = nomeJogador;
         this.personagem = personagem;
-        this.direcao = "direita";
-        this.x = 200;
-        this.y = 100;
+        this.direcao = false; // false = direita, true = esquerda
+        this.x = 50;
+        this.y = 550;
 
         switch (mapa){
             case "cidade":
-                this.vida = 20;
-                this.vidaMaxima = 20;
-                this.dano = 5;
+                this.vida = 50;
+                this.vidaMaxima = 50;
+                this.defesa = 10;
+                this.dano = 10;
                 break;
             case "prisão":
                 this.vida = 34;
                 this.vidaMaxima = 34;
+                this.defesa = 20;
                 this.dano = 6;
                 break;
             case "quintal":
                 this.vida = 42;
                 this.vidaMaxima = 42;
+                this.defesa = 30;
                 this.dano = 8;
                 break;
             default:
@@ -53,7 +57,7 @@ public class Jogador {
         }
     }
 
-    public void mover(int x, int y, String direcao){
+    public void mover(int x, int y, boolean direcao){
         this.x = x;
         this.y = y;
         this.direcao = direcao;
