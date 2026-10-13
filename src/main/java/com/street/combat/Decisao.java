@@ -5,6 +5,7 @@ import com.street.combat.module.gerenciadores.GerenciadorJogador;
 import com.street.combat.module.gerenciadores.GerenciadorSalas;
 import com.street.combat.module.jogador.AtaqueRamona;
 import com.street.combat.module.jogador.AtaqueScott;
+import com.street.combat.module.salas.Sala;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -15,8 +16,11 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component
 public class Decisao extends TextWebSocketHandler {
@@ -42,7 +46,7 @@ public class Decisao extends TextWebSocketHandler {
         sessions.put(session.getId(), sessionSegura);
         Map<String, Object> respostaServidor = new HashMap<>();
         respostaServidor.put("tipo", "salasOnline");
-        respostaServidor.put("salas", gerenciadorSalas.getSalasOnline().keySet());
+        respostaServidor.put("salas", getSalasOnlineValidas(gerenciadorSalas.getSalasOnline().values().stream().toList()));
         session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
     }
 
@@ -84,7 +88,7 @@ public class Decisao extends TextWebSocketHandler {
             case "receber_salas":
                 Map<String, Object> respostaServidor = new HashMap<>();
                 respostaServidor.put("tipo", "salasOnline");
-                respostaServidor.put("salas", gerenciadorSalas.getSalasOnline().keySet());
+                respostaServidor.put("salas", getSalasOnlineValidas(gerenciadorSalas.getSalasOnline().values().stream().toList()));
                 sessionSegura.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
                 break;
             case "andar":
@@ -170,11 +174,18 @@ public class Decisao extends TextWebSocketHandler {
     public void atualizarSalas() throws IOException {
         Map<String, Object> respostaServidor = new HashMap<>();
         respostaServidor.put("tipo", "atualizarSalasOnline");
-        respostaServidor.put("salas", gerenciadorSalas.getSalasOnline().keySet());
+        respostaServidor.put("salas", getSalasOnlineValidas(gerenciadorSalas.getSalasOnline().values().stream().toList()));
         for(WebSocketSession session : sessions.values()){
             if (session.isOpen()) {
                 session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
             }
         }
+    }
+
+    private Set<String> getSalasOnlineValidas(List<Sala> salasOnline) {
+        return salasOnline.stream()
+                .filter(sala -> sala.getJogadores().size() < 2)
+                .map(Sala::getId)
+                .collect(Collectors.toSet());
     }
 }

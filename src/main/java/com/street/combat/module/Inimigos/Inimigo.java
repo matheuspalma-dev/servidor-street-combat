@@ -82,7 +82,7 @@ public class Inimigo {
                 this.vida = 200;
                 this.dano = 15;
                 this.boss = true;
-                this.velocidade = 10;
+                this.velocidade = 8;
                 this.defesa = 15;
                 break;
             default:
@@ -109,7 +109,7 @@ public class Inimigo {
                 this.pontosPorDerrotar = 1;
                 this.vida = 30;
                 this.dano = 10;
-                this.boss = true;
+                this.boss = false;
                 this.velocidade = 10;
                 this.defesa = 8;
                 break;
@@ -142,7 +142,7 @@ public class Inimigo {
                 this.vida = 200;
                 this.dano = 15;
                 this.boss = true;
-                this.velocidade = 10;
+                this.velocidade = 8;
                 this.defesa = 15;
                 break;
             default:
@@ -159,27 +159,31 @@ public class Inimigo {
     }
 
     public void seMoverAteAPonta(){
+
+        int sorteio = ThreadLocalRandom.current().nextInt(1, 4);
         if (this.ponta){
             this.x -= velocidade;
-            if (this.x  <= 550){
-                this.y -= velocidade;
-                if (this.y <= 600){
-                    this.y = 600;
-                }
-            }
         } else {
             this.x += velocidade;
-            if (this.x  >= 550){
-                this.y += velocidade;
-                if (this.y >= 710){
-                    this.y = 710;
-                }
-            }
+        }
+
+        if (sorteio == 1) {
+            this.y -= velocidade / 2;
+        } else if (sorteio == 2) {
+            this.y += velocidade / 2;
+        }
+
+        if (this.y >= 710){
+            this.y = 710;
+        }
+
+        if (this.y <= 600){
+            this.y = 600;
         }
 
         if (this.x <= 10){
             this.ponta = false;
-        } else if (this.x >= 1100){
+        } else if (this.x >= 1500){
             this.ponta = true;
         }
     }

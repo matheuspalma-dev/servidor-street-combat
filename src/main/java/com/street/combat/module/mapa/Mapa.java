@@ -142,7 +142,7 @@ public class Mapa {
             return "comida_fraca_" + variante;
         } else if (tipo_item > 39 && tipo_item <= 45) {
             // veneno_1 ate veneno_4
-            int variante = ThreadLocalRandom.current().nextInt(1, 5);
+            int variante = ThreadLocalRandom.current().nextInt(1, 4);
             return "veneno_" + variante;
         } else if (tipo_item > 45 && tipo_item <= 58) {
             // moeda_1 ate moeda_3
@@ -247,7 +247,7 @@ public class Mapa {
             int sorteio = ThreadLocalRandom.current().nextInt(1, 4);
             String id = UUID.randomUUID().toString();
             Inimigo inimigo;
-            int x = i >= 3? 1200: -100;
+            int x = i >= 3? 2000: -100;
             int y;
 
             if (i == 1 || i == 4){
