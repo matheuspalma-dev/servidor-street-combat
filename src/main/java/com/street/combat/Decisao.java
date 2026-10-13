@@ -65,15 +65,16 @@ public class Decisao extends TextWebSocketHandler {
                 String mapa = (String) mensagemRecebida.get("mapa");
                 String personagem = (String) mensagemRecebida.get("personagem");
                 String nomeCriador = (String) mensagemRecebida.get("nomeCriador");
-                System.out.println("Mapa: " + mapa + ", Personagem: " + personagem + ", Nome do Criador: " + nomeCriador);
-                gerenciadorSalas.criarSala(mapa, sessionSegura, personagem, nomeCriador);
+                String skin = (String) mensagemRecebida.get("skin");
+                gerenciadorSalas.criarSala(mapa, sessionSegura, personagem, nomeCriador, skin);
                 atualizarSalas();
                 break;
             case "entrarSala":
                 String idSala = (String) mensagemRecebida.get("idSala");
                 String personagemEntrar = (String) mensagemRecebida.get("personagem");
                 String nomeJogador = (String) mensagemRecebida.get("nomeJogador");
-                gerenciadorSalas.entrarSala(idSala, sessionSegura, personagemEntrar, nomeJogador);
+                String skinEntrar = (String) mensagemRecebida.get("skin");
+                gerenciadorSalas.entrarSala(idSala, sessionSegura, personagemEntrar, nomeJogador, skinEntrar);
                 atualizarSalas();
                 break;
             case "sairDaSala":
@@ -93,9 +94,9 @@ public class Decisao extends TextWebSocketHandler {
                 gerenciadorJogador.jogadorAndou(sessionSegura, x, y, direcao);
                 break;
             case "tentarAtacar":
-                String personagemJogador = (String) mensagemRecebida.get("personagem");
+                String skinJogador = (String) mensagemRecebida.get("skin");
                 Object golpe;
-                if (personagemJogador.equals("feminino")){
+                if (skinJogador.equals("skin_rosa") || skinJogador.equals("skin_azul") || skinJogador.equals("skin_castanho") || skinJogador.equals("chapolin")){
                     golpe = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
                 } else { // masculino
                     golpe = AtaqueScott.valueOf((String) mensagemRecebida.get("golpe"));
@@ -105,6 +106,7 @@ public class Decisao extends TextWebSocketHandler {
             case "golpearInimigo":
                 String idInimigo = (String) mensagemRecebida.get("idInimigo");
                 boolean masculino = (boolean) mensagemRecebida.get("masculino");
+                int danoDado = (int) mensagemRecebida.get("dano");
                 Object golpeUsado;
 
                 if (masculino){
@@ -112,7 +114,7 @@ public class Decisao extends TextWebSocketHandler {
                 } else {
                     golpeUsado = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
                 }
-                gerenciadorInimigos.levouDano(sessionSegura, idInimigo, golpeUsado);
+                gerenciadorInimigos.levouDano(sessionSegura, idInimigo, golpeUsado, danoDado);
                 break;
             case "levarDano":
                 int dano = ((Number) mensagemRecebida.get("dano")).intValue();
@@ -120,13 +122,36 @@ public class Decisao extends TextWebSocketHandler {
                 break;
             case "golpearItem":
                 String idItem = (String) mensagemRecebida.get("idItem");
-                gerenciadorInimigos.itemLevouDano(sessionSegura, idItem);
+                int danoItem = (int) mensagemRecebida.get("dano");
+                gerenciadorInimigos.itemLevouDano(danoItem, idItem);
                 break;
             case "golpearBarreira":
                 String idBarreira = (String) mensagemRecebida.get("idBarreira");
-                gerenciadorInimigos.barreiraLevouDano(sessionSegura, idBarreira);
+                int danoBarreira = (int) mensagemRecebida.get("dano");
+                gerenciadorInimigos.barreiraLevouDano(sessionSegura, idBarreira, danoBarreira);
+                break;
+            case "recuperarVida":
+                int vidaRecuperada = (int) mensagemRecebida.get("vidaRecuperada");
+                gerenciadorJogador.recuperarVida(sessionSegura, vidaRecuperada);
                 break;
             case "lutarComBoss":
+                gerenciadorSalas.bossFight(sessionSegura);
+                break;
+            case "pegouItem":
+                String idItemPegou = (String) mensagemRecebida.get("idItem");
+                gerenciadorInimigos.pegouItem(sessionSegura, idItemPegou);
+                break;
+            case "danoNoBoss":
+                String idBoss = (String) mensagemRecebida.get("idBoss");
+                int danoBoss = (int) mensagemRecebida.get("dano");
+                gerenciadorInimigos.danoNoBoss(sessionSegura, idBoss, danoBoss);
+                break;
+            case "comecarLuta":
+                gerenciadorSalas.getIdSalaDoJogador(sessionSegura).iniciarBatalhaBoss();
+                break;
+            case "bossSeDefendeu":
+                String idInimigoBoss = (String) mensagemRecebida.get("idInimigo");
+                gerenciadorInimigos.bossSeDefender(sessionSegura, idInimigoBoss);
                 break;
             default:
                 System.out.println("deu ruim em algo ai");

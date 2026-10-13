@@ -35,4 +35,11 @@ public class GerenciadorJogador {
             sala.jogadorTentouGolpe(session.getId(), golpe);
         }
     }
+
+    public void recuperarVida(WebSocketSession session, int vidaRecuperada) throws IOException {
+        Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
+        if (sala != null) {
+            sala.jogadorRecuperouVida(session.getId(), vidaRecuperada);
+        }
+    }
 }

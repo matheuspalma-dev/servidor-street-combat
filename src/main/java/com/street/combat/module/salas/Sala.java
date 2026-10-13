@@ -1,15 +1,10 @@
 package com.street.combat.module.salas;
 
-import com.street.combat.module.Inimigos.AtaquesInimigoMapaCidade;
 import com.street.combat.module.Inimigos.Inimigo;
-import com.street.combat.module.jogador.AtaqueRamona;
-import com.street.combat.module.jogador.AtaqueScott;
-import com.street.combat.module.jogador.AtributosExtra;
 import com.street.combat.module.jogador.Jogador;
 import com.street.combat.module.mapa.Mapa;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -32,17 +27,20 @@ public class Sala {
     private Map<String, Jogador> jogadores = new ConcurrentHashMap<>();
     private Mapa mapa;
     private final ObjectMapper tradutor = new ObjectMapper();
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     private final Random random = new Random();
-    private boolean[] gruposCarregados = {false, false, false, false, false, false};
+    private boolean[] gruposInimigosCarregados = {false, false, false, false, false, false};
+    private Turno turno = Turno.SEM_TURNO;
 
-    @SneakyThrows
-    public Sala(String nomeMapa, String nomeCriador) {
+    public Sala(String nomeMapa, String nomeCriador) throws IOException {
         this.id = nomeCriador;
         this.mapa = new Mapa(nomeMapa, false);
     }
 
     public void iniciarLoop(){
+        if (executor.isShutdown() || executor == null){
+            executor = Executors.newSingleThreadScheduledExecutor();
+        }
         executor.scheduleAtFixedRate
                 (() -> {
                     try {
@@ -53,20 +51,54 @@ public class Sala {
                 }, 1000, 50, TimeUnit.MILLISECONDS);
     }
 
-    public void iniciarBatalhaDoBoss(){
-        mapa = new Mapa(mapa.getNome(), true);
+    public void encerrarLoop() {
+        executor.shutdownNow();
+    }
+
+    public void iniciarBatalhaBoss(){
+        iniciarLoop();
+    }
+
+    public void iniciarBatalhaDoBoss() throws IOException {
+        encerrarLoop();
+        mapa = new Mapa("cidadeBoss", true);
+        turno = Turno.PRIMEIRO_TURNO;
+        atualizarMapas();
+        atualizarInimigos();
+        reposicionarJogadores();
+        mapa.carregarBoss();
+    }
+
+    private void reposicionarJogadores(){
+        for (Jogador jogador : jogadores.values()){
+            jogador.reposicionar();
+        }
     }
 
     // Funções relacionadas a salas
-    public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador, boolean novoJogador) throws IOException {
-        Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador);
+    public void adicionarJogador(WebSocketSession session, String id, String personagem, String nomeJogador, boolean novoJogador, String skin) throws IOException {
+        Jogador jogador = new Jogador(personagem, id, this.mapa.getNome(), nomeJogador, skin);
         if (novoJogador){
             jogador.setX(200);
+            jogador.setXInicio(500);
         }
         jogadores.put(session.getId(), jogador);
         sessions.put(id, session);
         atualizarJogadores();
-        //atualizarItens();
+        atualizarBarreiras();
+        atualizarItens();
+        atualizarMapas();
+    }
+
+    public void atualizarMapas() throws IOException {
+        Map<String, Object> respostaServidor = new HashMap<>();
+        respostaServidor.put("tipo", "atualizarMapa");
+        respostaServidor.put("mapa", mapa.getNome());
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+            }
+        }
     }
 
     public void atualizarJogadores() throws IOException {
@@ -100,24 +132,24 @@ public class Sala {
     }
 
     private void adicionarInimigos(int xJogador) throws IOException {
-        if (!gruposCarregados[0] && xJogador >= 1100 && xJogador <= 2150){
+        if (!gruposInimigosCarregados[0] && xJogador >= 1100 && xJogador <= 2150){
             mapa.carregarInimigos(0);
-            gruposCarregados[0] = true;
-        } else if (!gruposCarregados[1] && xJogador >= 2750 && xJogador <= 3500){
+            gruposInimigosCarregados[0] = true;
+        } else if (!gruposInimigosCarregados[1] && xJogador >= 2350 && xJogador <= 3900){
             mapa.carregarInimigos(1);
-            gruposCarregados[1] = true;
-        } else if (!gruposCarregados[2] && xJogador >= 4100 && xJogador <= 4850) {
+            gruposInimigosCarregados[1] = true;
+        } else if (!gruposInimigosCarregados[2] && xJogador >= 3850 && xJogador <= 5050) {
             mapa.carregarInimigos(2);
-            gruposCarregados[2] = true;
-        } else if (!gruposCarregados[3] && xJogador >= 5450 && xJogador <= 6200){
+            gruposInimigosCarregados[2] = true;
+        } else if (!gruposInimigosCarregados[3] && xJogador >= 5250 && xJogador <= 6600){
             mapa.carregarInimigos(3);
-            gruposCarregados[3] = true;
-        } else if (!gruposCarregados[4] && xJogador >= 6800 && xJogador <= 7550){
+            gruposInimigosCarregados[3] = true;
+        } else if (!gruposInimigosCarregados[4] && xJogador >= 5950 && xJogador <= 7950){
             mapa.carregarInimigos(4);
-            gruposCarregados[4] = true;
-        } else if (!gruposCarregados[5] && xJogador >= 8150 && xJogador <= 8900) {
+            gruposInimigosCarregados[4] = true;
+        } else if (!gruposInimigosCarregados[5] && xJogador >= 7350 && xJogador <= 9300) {
             mapa.carregarInimigos(5);
-            gruposCarregados[5] = true;
+            gruposInimigosCarregados[5] = true;
         }
 
         int menorX = menorXJogador();
@@ -149,10 +181,10 @@ public class Sala {
         final int posicaoInicialBase = 1600;
         final int larguraGrupo = 750;
         final int espacoEntreGrupos = 600;
-        final int distanciaMaxima = 2000;
+        final int distanciaMaxima = 1700;
 
-        for (int i = 0; i < gruposCarregados.length; i++) {
-            if (!gruposCarregados[i]) continue;
+        for (int i = 0; i < gruposInimigosCarregados.length; i++) {
+            if (!gruposInimigosCarregados[i]) continue;
 
             int minX = posicaoInicialBase + i * (larguraGrupo + espacoEntreGrupos);
             int maxX = minX + larguraGrupo;
@@ -164,7 +196,7 @@ public class Sala {
                     int ex = entry.getValue().getX();
                     return ex >= fMinX && ex <= fMaxX;
                 });
-                gruposCarregados[i] = false;
+                gruposInimigosCarregados[i] = false;
             }
         }
     }
@@ -193,90 +225,6 @@ public class Sala {
         }
     }
 
-    public int danoDoJogador(String id) {
-        Jogador jogador = jogadores.get(id);
-        if (jogador != null) {
-            if (jogador.getAtributosExtras().contains(AtributosExtra.DANO_EXTRA)){
-                return jogador.getDano() + 2;
-            } else {
-                return jogador.getDano();
-            }
-        }
-        return 0;
-    }
-
-    private void jogadorReceberAtributoExtra(Jogador jogador, String nomeItem){
-        AtributosExtra atributoExtra;
-        switch (nomeItem){
-            case "recuperarVida":
-                atributoExtra = AtributosExtra.RECUPERAR_VIDA;
-                break;
-            case "danoExtra":
-                atributoExtra = AtributosExtra.DANO_EXTRA;
-                break;
-            case "escudoExtra":
-                atributoExtra = AtributosExtra.DEFESA_EXTRA;
-                break;
-            case "veneno":
-                atributoExtra = AtributosExtra.VENENO;
-                break;
-            case "velocidadeExtra":
-                atributoExtra = AtributosExtra.VELOCIDADE_EXTRA;
-                break;
-            default:
-                atributoExtra = null;
-                break;
-        }
-        if (atributoExtra != null) {
-            jogador.adicionarAtributoExtra(atributoExtra);
-            jogadorReceberEfeitosDoItem(jogador, atributoExtra);
-        }
-
-    }
-
-    private void jogadorReceberEfeitosDoItem(Jogador jogador, AtributosExtra atributoExtra){
-        if (!jogador.estaVivo()){
-            return;
-        }
-
-        ScheduledExecutorService efeitoExecutor = Executors.newSingleThreadScheduledExecutor();
-
-        long tempoInicio = System.currentTimeMillis();
-        long duracaoTotalMs = 60_000;
-
-        efeitoExecutor.scheduleAtFixedRate(() -> {
-            try {
-                long tempoDecorrido = System.currentTimeMillis() - tempoInicio;
-
-                if (tempoDecorrido >= duracaoTotalMs || !jogadores.containsKey(jogador.getId()) || !jogador.estaVivo()) {
-                    jogador.removerAtributoExtra(atributoExtra);
-                    atualizarJogadores();
-                    efeitoExecutor.shutdown();
-                    return;
-                }
-
-                switch (atributoExtra) {
-                    case RECUPERAR_VIDA:
-                        jogador.curar();
-                        atualizarJogadores();
-                        break;
-
-                    case VENENO:
-                        jogadorLevouDano(jogador.getId(), 1);
-                        break;
-                    case DANO_EXTRA:
-                    case DEFESA_EXTRA:
-                    case VELOCIDADE_EXTRA:
-                        break;
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                efeitoExecutor.shutdown();
-            }
-        }, 0, 5, TimeUnit.SECONDS);
-    }
-
     // Funções relacionadas a inimigos
     public void atualizarInimigos() throws IOException {
         Map<String, Object> respostaServidor = new HashMap<>();
@@ -289,15 +237,16 @@ public class Sala {
         }
     }
 
-
     public void inimigoEscolherJogadorParaAtacar() throws IOException {
         List<Inimigo> inimigosAtacando = new ArrayList<>();
         for (Inimigo inimigo : mapa.getInimigos().values()){
             if (!inimigo.estaVivo()) continue;
 
+            if (inimigo.isBoss() && turno == Turno.SEGUNDO_TURNO) continue;
+
             Jogador alvo = null;
             int menorDistancia = 0;
-            for (Jogador jogador : jogadores.values()){
+            for (Jogador jogador : jogadores.values()) {
                 if (!jogador.estaVivo()) continue;
 
                 int distanciaX = Math.abs(inimigo.getX() - jogador.getX());
@@ -309,18 +258,19 @@ public class Sala {
                 }
             }
             if (alvo != null) {
-                inimigo.mover(alvo.getX(), alvo.getY(), alvo.isDirecao());
-                if (inimigo.isAtacar()){
+                inimigo.mover(alvo.getX(), alvo.getY(), alvo.isDirecao(), mapa.getBarreiras().values(), turno);
+                if (inimigo.isAtacar()) {
                     inimigoVaiTentarGolpe(inimigo);
                     inimigosAtacando.add(inimigo);
                 }
             }
 
-        }
+            atualizarInimigos();
+            for (Inimigo inimigoAtacando : inimigosAtacando){
+                controlarAtaqueInimigo(inimigoAtacando);
+            }
 
-        atualizarInimigos();
-        for (Inimigo inimigo : inimigosAtacando){
-            controlarAtaqueInimigo(inimigo);
+
         }
     }
 
@@ -328,10 +278,17 @@ public class Sala {
         inimigo.setAtacar(false);
         inimigo.setAtacando(true);
         inimigo.setPausaAtaque(true);
-        executor.schedule(() -> {
-            inimigo.setAtacando(false);
-            inimigo.setPausaAtaque(false);
-        }, 1800, TimeUnit.MILLISECONDS);
+        if (inimigo.isBoss()){
+            executor.schedule(() -> {
+                inimigo.setAtacando(false);
+                inimigo.setPausaAtaque(false);
+            }, 3300, TimeUnit.MILLISECONDS);
+        } else {
+            executor.schedule(() -> {
+                inimigo.setAtacando(false);
+                inimigo.setPausaAtaque(false);
+            }, 2300, TimeUnit.MILLISECONDS);
+        }
     }
 
     // Funções relacionadas a itens
@@ -377,25 +334,19 @@ public class Sala {
             case "stella":
                 golpesDisponiveis = new String[]{"stella_golpe_1"};
                 break;
+            case "LucasLee":
+                if (turno == Turno.PRIMEIRO_TURNO){
+                    golpesDisponiveis = new String[]{"lucas_lee_ataque_1", "lucas_lee_ataque_2"};
+                } else {
+                    golpesDisponiveis = new String[]{"lucas_lee_ataque_1_skate", "lucas_lee_ataque_2_skate"};
+                }
+                break;
             default:
                 golpesDisponiveis = new String[]{};
                 break;
         }
 
         return golpesDisponiveis[random.nextInt(golpesDisponiveis.length)];
-    }
-
-    public void itemLevouDano(String idJogador, String id, int dano) throws IOException {
-        mapa.itemLevouDano(id, dano);
-        if (mapa.itemEstaVivo(id)){
-            Jogador jogador = jogadores.get(idJogador);
-            if (jogador != null) {
-                String nomeItem = mapa.getItens().get(id).getNome();
-                jogadorReceberAtributoExtra(jogador, nomeItem);
-                mapa.removerItem(id);
-            }
-        }
-        atualizarItens();
     }
 
     // Funções relacionadas a barreiras
@@ -413,6 +364,113 @@ public class Sala {
     public void barreiraLevouDano(String id, int dano) throws IOException {
         mapa.barreiraLevouDano(id, dano);
         atualizarBarreiras();
+    }
+
+    public void itemLevouDano(int dano, String idItem) throws IOException {
+        mapa.itemLevouDano(idItem, dano);
+        atualizarItens();
+    }
+
+    public void jogadorRecuperouVida(String id, int vidaRecuperada) throws IOException {
+        Jogador jogador = jogadores.get(id);
+        if (jogador != null) {
+            jogador.recuperarVida(vidaRecuperada);
+            atualizarJogadores();
+        }
+    }
+
+    public void iniciarBatalhaComBoss() throws IOException {
+        iniciarBatalhaDoBoss();
+    }
+
+    public void danoNoBoss(String idBoss, int dano) throws IOException {
+        String nomeDoBoss = mapa.getInimigos().get(idBoss).getNome();
+        if (nomeDoBoss.equals("LucasLee")){
+            if (mapa.getInimigos().get(idBoss).getVida() - dano <= 0) {
+                mapa.danoNoBoss(idBoss, dano);
+                atualizarInimigos();
+                acabarPartida();
+            }
+            else if (mapa.getInimigos().get(idBoss).getVida() - dano <= 100){
+                if (turno == Turno.PRIMEIRO_TURNO){
+                    turno = Turno.SEGUNDO_TURNO;
+                    atualizarTurno();
+                    mapa.danoNoBoss(idBoss, dano);
+                    atualizarInimigos();
+                    bossSairDeCena(idBoss);
+                } else {
+                    mapa.danoNoBoss(idBoss, dano);
+                    atualizarInimigos();
+                }
+            } else {
+                mapa.danoNoBoss(idBoss, dano);
+                atualizarInimigos();
+            }
+        }
+    }
+    public void acabarPartida() throws IOException {
+        Map<String, Object> respostaServidor = new HashMap<>();
+        respostaServidor.put("tipo", "fimDaPartida");
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+            }
+        }
+    }
+
+    public void pegouItem(String idItem) throws IOException {
+        mapa.pegouItem(idItem);
+        atualizarItens();
+    }
+
+    @Async
+    public void bossSairDeCena(String id) throws IOException {
+        while (mapa.getInimigos().get(id).getX() > -200){
+            mapa.getInimigos().get(id).irParaFimDoMapa();
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        mapa.adicionarInimigosBatalhaBoss1();
+        atualizarInimigos();
+    }
+
+    public void inimigoTomouDano(String idInimigo, int dano) throws IOException {
+        boolean deletouInimgo = mapa.inimigoLevouDano(idInimigo, dano);
+        if (deletouInimgo) {
+            if (turno == Turno.SEGUNDO_TURNO && mapa.getInimigos().size() == 1){
+                turno = Turno.TERCEIRO_TURNO;
+                atualizarTurno();
+                mapa.adicionarInimigosBatalhaBoss1();
+            } else if (turno == Turno.TERCEIRO_TURNO && mapa.getInimigos().size() == 1) {
+                turno = Turno.QUARTO_TURNO;
+                atualizarTurno();
+            }
+        }
+    }
+
+    public void atualizarTurno() throws IOException {
+        Map<String, Object> respostaServidor = new HashMap<>();
+        respostaServidor.put("tipo", "atualizarTurno");
+        respostaServidor.put("turno", this.turno);
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+            }
+        }
+    }
+
+    public void bossSeDefendeu(String inimigoId) throws IOException {
+        Map<String, Object> respostaServidor = new HashMap<>();
+        respostaServidor.put("tipo", "inimigoSeDefender");
+        respostaServidor.put("idInimigo", inimigoId);
+        for(WebSocketSession session : sessions.values()){
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(tradutor.writeValueAsString(respostaServidor)));
+            }
+        }
     }
 
 }

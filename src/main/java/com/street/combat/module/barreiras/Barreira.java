@@ -9,17 +9,21 @@ import java.util.Random;
 @Setter
 public class Barreira {
 
+    private final String id;
     private final String tipo;
     private int vida;
     private int x;
     private int y;
+    private int defesa;
 
-    public Barreira(String tipo, String mapa) {
+    public Barreira(String tipo, String mapa, int x, int Grupoy, String id) {
+        this.id = id;
         this.tipo = tipo;
 
         switch (mapa){
             case "cidade":
-                this.vida = 10;
+                this.vida = 30;
+                this.defesa = 6;
                 break;
             case "prisão":
                 this.vida = 15;
@@ -32,8 +36,16 @@ public class Barreira {
                 System.out.println("Algo deu errado, mapa não encontrado");
         }
 
-        this.x = new Random().nextInt((500 - 100) + 1) + 100;
-        this.y = new Random().nextInt((500 - 100) + 1) + 100;
+        this.x = x;
+        if (Grupoy == 0){
+            this.y = 460;
+        } else if (Grupoy == 1) {
+            this.y = 515;
+        } else if (Grupoy == 2) {
+            this.y = 580;
+        } else {
+            this.y = 640;
+        }
     }
 
     public boolean estarMorto() {

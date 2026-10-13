@@ -21,14 +21,13 @@ public class GerenciadorInimigos {
     }
 
     @Async
-    public void levouDano(WebSocketSession session, String idInimigo, Object golpe) throws IOException {
+    public void levouDano(WebSocketSession session, String idInimigo, Object golpe, int danoDado) throws IOException {
         Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
         if (sala != null) {
-            int danoDoJogador = sala.danoDoJogador(session.getId());
             Mapa mapa = sala.getMapa();
             if (mapa != null) {
                 int distanciaParaSerJogadoParaTras = calcularDistanciaParaSerJogadoParaTras(golpe);
-                mapa.inimigoLevouDano(idInimigo, danoDoJogador);
+                sala.inimigoTomouDano(idInimigo, danoDado);
                 jogarInimigoParaTras(mapa, sala, idInimigo, distanciaParaSerJogadoParaTras);
             }
         }
@@ -39,7 +38,7 @@ public class GerenciadorInimigos {
         Inimigo inimigo = mapa.getInimigos().get(idInimigo);
         if (inimigo != null){
             for (int i = 0; i < 4; i++){
-                inimigo.serJogadoParaTras(distanciaParaSerJogadoParaTras);
+                inimigo.serJogadoParaTras(distanciaParaSerJogadoParaTras, mapa.getBarreiras().values());
                 sala.atualizarInimigos();
                 try{
                     Thread.sleep(100);
@@ -54,26 +53,26 @@ public class GerenciadorInimigos {
                 e.printStackTrace();
             }
 
-            inimigo.setPodesSeMover(true);
+            inimigo.setPodeSeMover(true);
         }
     }
 
     private int calcularDistanciaParaSerJogadoParaTras(Object golpe) {
         if (golpe instanceof AtaqueScott){
             if (golpe == AtaqueScott.CHUTE_BAIXO){
-                return 60; // 120
+                return 26; // 120
             } else if (golpe == AtaqueScott.SOCO_DIRETO){
-                return 18; // mais fraco 30
+                return 12; // mais fraco 30
             } else { // demais golpes
-                return 46; // mais longe 90
+                return 20; // mais longe 90
             }
         } else if (golpe instanceof AtaqueRamona){
             if (golpe == AtaqueRamona.MARTELO_MEDIO_ALCANCE){
-                return 23; // 120
+                return 28; // 120
             } else if (golpe == AtaqueRamona.SOCO){
-                return 8; // mais fraco 30
+                return 9; // mais fraco 30
             } else { // demais golpes
-                return 30; // mais longe 90
+                return 20; // mais longe 90
             }
         } else {
             System.out.println("Golpe nem chegou aqui");
@@ -81,26 +80,55 @@ public class GerenciadorInimigos {
         return 0;
     }
 
-    public void itemLevouDano(WebSocketSession session, String idItem) throws IOException {
+    public void barreiraLevouDano(WebSocketSession session, String idBarreira, int dano) throws IOException {
         Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
         if (sala != null) {
-            int danoDoJogador = sala.danoDoJogador(session.getId());
             Mapa mapa = sala.getMapa();
             if (mapa != null) {
-                sala.itemLevouDano(session.getId(), idItem, danoDoJogador);
+                sala.barreiraLevouDano(idBarreira, dano);
+                sala.atualizarBarreiras();
+            }
+        }
+    }
+
+    public void itemLevouDano(int dano, String idItem) throws IOException {
+        for (Sala sala : gerenciadorSalas.getSalasOnline().values()) {
+            Mapa mapa = sala.getMapa();
+            if (mapa != null) {
+                sala.itemLevouDano(dano,idItem);
                 sala.atualizarItens();
             }
         }
     }
 
-    public void barreiraLevouDano(WebSocketSession session, String idBarreira) throws IOException {
+    public void pegouItem(WebSocketSession session, String idItem) throws IOException {
         Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
         if (sala != null) {
-            int danoDoJogador = sala.danoDoJogador(session.getId());
             Mapa mapa = sala.getMapa();
             if (mapa != null) {
-                sala.barreiraLevouDano(idBarreira, danoDoJogador);
-                sala.atualizarBarreiras();
+                sala.pegouItem(idItem);
+                sala.atualizarItens();
+            }
+        }
+    }
+
+    public void danoNoBoss(WebSocketSession session, String idBoss, int dano) throws IOException {
+        Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
+        if (sala != null) {
+            Mapa mapa = sala.getMapa();
+            if (mapa != null) {
+                sala.danoNoBoss(idBoss, dano);
+                sala.atualizarInimigos();
+            }
+        }
+    }
+
+    public void bossSeDefender(WebSocketSession session, String inimigoId) throws IOException {
+        Sala sala = gerenciadorSalas.getIdSalaDoJogador(session);
+        if (sala != null) {
+            Mapa mapa = sala.getMapa();
+            if (mapa != null) {
+                sala.bossSeDefendeu(inimigoId);
             }
         }
     }

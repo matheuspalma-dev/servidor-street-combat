@@ -1,8 +1,11 @@
 package com.street.combat.module.Inimigos;
 
+import com.street.combat.module.barreiras.Barreira;
+import com.street.combat.module.salas.Turno;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,6 +15,7 @@ import static java.lang.Math.abs;
 @Setter
 public class Inimigo {
 
+    private final String id;
     private final String nome;
     private int vida;
     private final int dano;
@@ -24,16 +28,18 @@ public class Inimigo {
     private int velocidade;
     private int quantidadeMovimentos;
     private int direcaoAleatoria;
+    private int defesa;
 
-    private boolean podesSeMover = true;
+    private boolean podeSeMover = true;
     private boolean atacar = false;
     private boolean atacando = false;
     private boolean pausaAtaque = false;
+    private boolean ponta = false; // true = esquerda, false = direita
 
     private final Random random = new Random();
 
-    public
-    Inimigo(String nome, int[] posicoesAliados, int minX, int maxX) {
+    public Inimigo(String nome, int[] posicoesAliados, int minX, int maxX, String id) {
+        this.id = id;
         this.nome = nome;
         this.direcao = false; //direita
         this.quantidadeMovimentos = 5;
@@ -44,7 +50,8 @@ public class Inimigo {
                 this.vida = 30;
                 this.dano = 10;
                 this.boss = false;
-                this.velocidade = 12;
+                this.velocidade = 10;
+                this.defesa = 8;
                 break;
             case "raymond":
                 this.pontosPorDerrotar = 1;
@@ -52,6 +59,7 @@ public class Inimigo {
                 this.dano = 8;
                 this.boss = false;
                 this.velocidade = 8;
+                this.defesa = 10;
                 break;
             case "rick":
                 this.pontosPorDerrotar = 1;
@@ -59,6 +67,7 @@ public class Inimigo {
                 this.dano = 8;
                 this.boss = false;
                 this.velocidade = 6;
+                this.defesa = 8;
                 break;
             case "stella":
                 this.pontosPorDerrotar = 1;
@@ -66,13 +75,15 @@ public class Inimigo {
                 this.dano = 12;
                 this.boss = false;
                 this.velocidade = 10;
+                this.defesa = 6;
                 break;
             case "LucasLee":
                 this.pontosPorDerrotar = 10;
                 this.vida = 200;
-                this.dano = 10;
+                this.dano = 15;
                 this.boss = true;
-                this.velocidade = 1;
+                this.velocidade = 10;
+                this.defesa = 15;
                 break;
             default:
                 this.pontosPorDerrotar = 0;
@@ -83,52 +94,134 @@ public class Inimigo {
                 break;
         }
 
-        boolean podeEsseX;
-        int posicaoX;
-        do {
-            posicaoX = xCorreto(minX, maxX);
-            podeEsseX = podeEsseX(posicoesAliados, posicaoX);
-        } while(!podeEsseX);
+        int posicaoX = xCorreto(minX, maxX);
         this.x = posicaoX;// ThreadLocalRandom.current().nextInt(1500, 4001);
         this.y = ThreadLocalRandom.current().nextInt(550, 580);
     }
 
-    private boolean podeEsseX(int[] posicoes, int posicaoX){
-        for (int posicao : posicoes){
-            if (posicaoX == posicao){
-                return false;
-            } else if (abs(posicaoX - posicao) < 90){
-                return false;
+    public Inimigo(String nome, int x, int y, String id) {
+        this.id = id;
+        this.nome = nome;
+        this.direcao = true; //direita
+
+        switch (nome) {
+            case "david":
+                this.pontosPorDerrotar = 1;
+                this.vida = 30;
+                this.dano = 10;
+                this.boss = true;
+                this.velocidade = 10;
+                this.defesa = 8;
+                break;
+            case "raymond":
+                this.pontosPorDerrotar = 1;
+                this.vida = 45;
+                this.dano = 8;
+                this.boss = false;
+                this.velocidade = 8;
+                this.defesa = 10;
+                break;
+            case "rick":
+                this.pontosPorDerrotar = 1;
+                this.vida = 30;
+                this.dano = 8;
+                this.boss = false;
+                this.velocidade = 6;
+                this.defesa = 8;
+                break;
+            case "stella":
+                this.pontosPorDerrotar = 1;
+                this.vida = 20;
+                this.dano = 12;
+                this.boss = false;
+                this.velocidade = 10;
+                this.defesa = 6;
+                break;
+            case "LucasLee":
+                this.pontosPorDerrotar = 10;
+                this.vida = 200;
+                this.dano = 15;
+                this.boss = true;
+                this.velocidade = 10;
+                this.defesa = 15;
+                break;
+            default:
+                this.pontosPorDerrotar = 0;
+                this.vida = 0;
+                this.dano = 0;
+                this.boss = false;
+                this.velocidade = 2;
+                break;
+        }
+
+        this.x = x;
+        this.y = y;
+    }
+
+    public void seMoverAteAPonta(){
+        if (this.ponta){
+            this.x -= velocidade;
+            if (this.x  <= 550){
+                this.y -= velocidade;
+                if (this.y <= 600){
+                    this.y = 600;
+                }
+            }
+        } else {
+            this.x += velocidade;
+            if (this.x  >= 550){
+                this.y += velocidade;
+                if (this.y >= 710){
+                    this.y = 710;
+                }
             }
         }
 
-        return true;
+        if (this.x <= 10){
+            this.ponta = false;
+        } else if (this.x >= 1100){
+            this.ponta = true;
+        }
     }
     private int xCorreto(int minX, int maxX){
         return ThreadLocalRandom.current().nextInt(minX, maxX + 1);
     }
 
-    public void serJogadoParaTras(int distancia){
-        podesSeMover = false;
+    public void serJogadoParaTras(int distancia, Collection<Barreira> barreiras){
+        podeSeMover = false;
         if (this.direcao){
-            x -= distancia;
+            if (podeSeMoverParaEsseX(this.x - distancia, barreiras)) {
+                this.x -= distancia;
+            }
         } else {
-            x += distancia;
+            if (podeSeMoverParaEsseX(this.x + distancia, barreiras)) {
+                this.x += distancia;
+            }
         }
 
         int sorteio = ThreadLocalRandom.current().nextInt(1, 3);
         if (sorteio == 1){
             y -= distancia / 2;
+            if (y < 393){
+                y = 393;
+            }
         } else {
             y += distancia / 2;
+            if (y > 608){
+                y = 608;
+            }
         }
     }
 
-    public void mover(int jogadorX, int jogadorY, boolean direcaoJogador) {
+    public void mover(int jogadorX, int jogadorY, boolean direcaoJogador, Collection<Barreira> barreiras, Turno turno) {
         this.atacar = false;
 
-        if (!podesSeMover || atacando) {
-            atualizarDirecao(jogadorX);
+        if (!podeSeMover || atacando) {
+            return;
+        }
+
+        if (nome.equals("LucasLee") && turno == Turno.TERCEIRO_TURNO && boss) {
+            seMoverAteAPonta();
             return;
         }
 
@@ -139,52 +232,78 @@ public class Inimigo {
         int distanciaY = abs(this.y - jogadorY);
         int distanciaTotal = distanciaX + distanciaY;
 
-        if (distanciaTotal > 400) {
-            moverAleatoriamente();
-        } else {
-            if (this.y < jogadorY) {
-                if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
-                    if (direcaoJogador) { // direção true (esquerda)
-                        this.x += velocidade;
-                    } else {
-                        this.x -= velocidade;
-                    }
-                    moveuX = true;
-                } else {
-                    this.y += velocidade;
-                }
-            } else if (this.y > jogadorY) {
-                if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
-                    if (direcaoJogador) { // direção true (esquerda)
-                        this.x += velocidade;
-                    } else {
-                        this.x -= velocidade;
-                    }
-                    moveuX = true;
-                } else {
-                    this.y -= velocidade;
-                }
-            }
 
-            if (!moveuX) {
-                if (distanciaX > 60) {
-                    if (this.x < jogadorX) {
-                        this.x += velocidade;
-                    } else if (this.x > jogadorX) {
-                        this.x -= velocidade;
-                    }
-                } else if (distanciaX <= 60 && distanciaY <= 25) {
-                    if (!this.pausaAtaque && !this.atacando) {
-                        this.atacar = true;
-                        this.atacando = true;
-                        this.pausaAtaque = true;
-                    }
+        if (this.boss){
+            moveuX = isMoveuX(jogadorX, jogadorY, direcaoJogador, barreiras, moveuX, distanciaX, distanciaY);
+        } else {
+            if (turno == Turno.SEM_TURNO) {
+                if (distanciaTotal > 400) {
+                    moverAleatoriamente(barreiras);
+                } else {
+                    moveuX = isMoveuX(jogadorX, jogadorY, direcaoJogador, barreiras, moveuX, distanciaX, distanciaY);
                 }
+            } else {
+                moveuX = isMoveuX(jogadorX, jogadorY, direcaoJogador, barreiras, moveuX, distanciaX, distanciaY);
             }
         }
     }
 
-    private void moverAleatoriamente(){
+    private boolean isMoveuX(int jogadorX, int jogadorY, boolean direcaoJogador, Collection<Barreira> barreiras, boolean moveuX, int distanciaX, int distanciaY) {
+        if (this.y < jogadorY) {
+            if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
+                if (direcaoJogador) { // direção true (esquerda)
+                    if (podeSeMoverParaEsseX(this.x + velocidade, barreiras)) {
+                        this.x += velocidade;
+                    }
+                } else {
+                    if (podeSeMoverParaEsseX(this.x - velocidade, barreiras)) {
+                        this.x -= velocidade;
+                    }
+                }
+                moveuX = true;
+            } else {
+                this.y += velocidade;
+            }
+        } else if (this.y > jogadorY) {
+            if (abs(jogadorY - this.y) < 5 && jogadorX == this.x) {
+                if (direcaoJogador) { // direção true (esquerda)
+                    if (podeSeMoverParaEsseX(this.x + velocidade, barreiras)) {
+                        this.x += velocidade;
+                    }
+                } else {
+                    if (podeSeMoverParaEsseX(this.x - velocidade, barreiras)) {
+                        this.x -= velocidade;
+                    }
+                }
+                moveuX = true;
+            } else {
+                this.y -= velocidade;
+            }
+        }
+
+        if (!moveuX) {
+            if (distanciaX > 60) {
+                if (this.x < jogadorX) {
+                    if (podeSeMoverParaEsseX(this.x + velocidade, barreiras)) {
+                        this.x += velocidade;
+                    }
+                } else if (this.x > jogadorX) {
+                    if (podeSeMoverParaEsseX(this.x - velocidade, barreiras)) {
+                        this.x -= velocidade;
+                    }
+                }
+            } else if (distanciaX <= 60 && distanciaY <= 25) {
+                if (!this.pausaAtaque && !this.atacando) {
+                    this.atacar = true;
+                    this.atacando = true;
+                    this.pausaAtaque = true;
+                }
+            }
+        }
+        return moveuX;
+    }
+
+    private void moverAleatoriamente(Collection<Barreira> barreiras){
         if (quantidadeMovimentos <= 0){
             direcaoAleatoria = random.nextInt(4);
             quantidadeMovimentos = 5;
@@ -193,18 +312,45 @@ public class Inimigo {
         switch (direcaoAleatoria) {
             case 0: // cima
                 this.y -= velocidade;
+                if (this.y < 50) {
+                    this.y = 50;
+                }
                 break;
             case 1: // baixo
                 this.y += velocidade;
+                if (this.y > 600) {
+                    this.y = 600;
+                }
                 break;
             case 2: // esquerda
-                this.x -= velocidade;
+                if (podeSeMoverParaEsseX(this.x - velocidade, barreiras)) {
+                    this.x -= velocidade;
+                    if (this.x < 10) {
+                        this.x = 10;
+                    }
+                }
                 break;
             case 3: // direita
-                this.x += velocidade;
+                if (podeSeMoverParaEsseX(this.x + velocidade, barreiras)) {
+                    this.x += velocidade;
+                    if (this.x > 9447) {
+                        this.x = 9447;
+                    }
+                }
                 break;
         }
         quantidadeMovimentos -= 1;
+    }
+
+    public boolean podeSeMoverParaEsseX(int x, Collection<Barreira> barreiras) {
+        if (barreiras != null) {
+            for (Barreira barreira : barreiras) {
+                if (abs(x - barreira.getX()) <= 40 && abs(this.y - barreira.getY()) <= 40) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private void atualizarDirecao(int jogadorX) {
@@ -224,6 +370,10 @@ public class Inimigo {
 
     public boolean estaVivo() {
         return this.vida > 0;
+    }
+
+    public void irParaFimDoMapa(){
+        this.x -= velocidade;
     }
 
 }

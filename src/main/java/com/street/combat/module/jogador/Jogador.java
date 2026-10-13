@@ -1,17 +1,14 @@
 package com.street.combat.module.jogador;
 
-
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.EnumSet;
-import java.util.Set;
 
 @Getter
 @Setter
 public class Jogador {
     private String id;
     private final String nomeJogador;
+    private final String skin;
     private final String personagem;
     private boolean direcao;
     private int vida;
@@ -20,15 +17,19 @@ public class Jogador {
     private int x;
     private int y;
     private int dano;
-    private Set<AtributosExtra> atributosExtras = EnumSet.noneOf(AtributosExtra.class);
+    private int xInicio;
+    private final int yInicio;
 
-    public Jogador(String personagem, String id, String mapa, String nomeJogador) {
+    public Jogador(String personagem, String id, String mapa, String nomeJogador, String skin) {
         this.id = id;
         this.nomeJogador = nomeJogador;
+        this.skin = skin;
         this.personagem = personagem;
         this.direcao = false; // false = direita, true = esquerda
         this.x = 50;
         this.y = 550;
+        this.yInicio = 550;
+        this.xInicio = 50;
 
         switch (mapa){
             case "cidade":
@@ -74,18 +75,16 @@ public class Jogador {
         return this.vida > 0;
     }
 
-    public void adicionarAtributoExtra(AtributosExtra atributoExtra){
-        this.atributosExtras.add(atributoExtra);
-    }
-
-    public void removerAtributoExtra(AtributosExtra atributoExtra){
-        this.atributosExtras.remove(atributoExtra);
-    }
-
-    public void curar(){
-        this.vida += 5;
-        if (this.vida > this.vidaMaxima) {
+    public void recuperarVida(int vidaRecuperada){
+        this.vida += vidaRecuperada;
+        if (this.vida > this.vidaMaxima){
             this.vida = this.vidaMaxima;
         }
+    }
+
+    public void reposicionar(){
+        this.x = this.xInicio;
+        this.y = this.yInicio;
+        this.direcao = false;
     }
 }

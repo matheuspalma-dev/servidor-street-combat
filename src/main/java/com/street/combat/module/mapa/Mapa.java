@@ -25,10 +25,20 @@ public class Mapa {
         this.nome = nome;
         this.mapaLutaBoss = mapaLutaBoss;
         if (!mapaLutaBoss) {
-            //carregarItens();
-            //carregarBarreiras();
-        } else{
+            carregarItens();
+            carregarBarreiras();
+        }
+    }
 
+    public void carregarBoss(){
+        switch (this.nome){
+            case "cidadeBoss":
+                String id = UUID.randomUUID().toString();
+                Inimigo boss = new Inimigo("LucasLee", 800, 650, id);
+                inimigos.put(id, boss);
+                break;
+            case "prisão":
+            case "quintal":
         }
     }
 
@@ -36,9 +46,9 @@ public class Mapa {
         switch (this.nome){
             case "cidade":
                 int posicaoInicialBase = 1600;
-                int larguraGrupo = 750;
+                int larguraGrupo = 740;
                 int espacoEntreGrupos = 600;
-                int quantidadeInimigosNoGrupo = ThreadLocalRandom.current().nextInt(3, 6);
+                int quantidadeInimigosNoGrupo = ThreadLocalRandom.current().nextInt(5, 8);
                 int minX = posicaoInicialBase + grupo * (larguraGrupo + espacoEntreGrupos);
                 int maxX = minX + larguraGrupo;
                 int[] posicoesAliados = new int[quantidadeInimigosNoGrupo];
@@ -49,19 +59,19 @@ public class Mapa {
 
                     switch (sorteio) {
                         case 1:
-                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX);
+                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX, id);
                             break;
                         case 2:
-                            inimigo = new Inimigo("raymond", posicoesAliados, minX, maxX);
+                            inimigo = new Inimigo("raymond", posicoesAliados, minX, maxX, id);
                             break;
                         case 3:
-                            inimigo = new Inimigo("rick", posicoesAliados, minX, maxX);
+                            inimigo = new Inimigo("rick", posicoesAliados, minX, maxX, id);
                             break;
                         case 4:
-                            inimigo = new Inimigo("stella", posicoesAliados, minX, maxX);
+                            inimigo = new Inimigo("stella", posicoesAliados, minX, maxX, id);
                             break;
                         default:
-                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX);
+                            inimigo = new Inimigo("david", posicoesAliados, minX, maxX, id);
                             break;
                     }
 
@@ -75,54 +85,44 @@ public class Mapa {
         }
     }
 
-    public void removerInimigo(String id){
-        Inimigo inimigo = inimigos.get(id);
-        if (inimigo != null) {
-            inimigos.remove(id);
-        }
-    }
-
-
-    public void inimigoLevouDano(String id, int dano){
+    public boolean inimigoLevouDano(String id, int dano){
         Inimigo inimigo = inimigos.get(id);
         if (inimigo != null) {
             inimigo.levarDano(dano);
             if (!inimigo.estaVivo()) {
                 inimigos.remove(id);
+                return true;
             }
         }
-    }
-
-    public boolean semInimigos(){
-        return inimigos.isEmpty();
+        return false;
     }
 
     public void carregarItens(){
         switch (this.nome){
             case "cidade":
-                int QuantidadeItens = 10;
-                int recuperarVida = 2;
-                int danoExtra = 2;
-                int escudoExtra = 1;
-                int veneno = 2;
-                int velocidadeExtra = 2;
-
-                for (int i = 0; i < QuantidadeItens; i++){
-                    String id = UUID.randomUUID().toString();
-                    if (recuperarVida > 0){
-                        itens.put(id, new Item("recuperarVida", "cidade"));
-                        recuperarVida -= 1;
-                    } else if (danoExtra > 0) {
-                        itens.put(id, new Item("danoExtra", "cidade"));
-                        danoExtra -= 1;
-                    } else if (escudoExtra > 0) {
-                        itens.put(id, new Item("escudoExtra", "cidade"));
-                        escudoExtra -= 1;
-                    } else if (veneno > 0) {
-                        itens.put(id, new Item("veneno", "cidade"));
-                        veneno -= 1;
-                    } else {
-                        itens.put(id, new Item("velocidadeExtra", "cidade"));
+                int quantidadeDeGrupos = 5;
+                int posicaoInicialBase = 1650;
+                int larguraGrupo = 650;
+                int espacoEntreGrupos = 620;
+                for (int grupo = 1; grupo < quantidadeDeGrupos; grupo++) {
+                    int quantidadeItens = ThreadLocalRandom.current().nextInt(0, 5);
+                    int[] posicoesItens = new int[quantidadeItens];
+                    for (int item = 0; item < quantidadeItens; item++) {
+                        String id = UUID.randomUUID().toString();
+                        int minX = posicaoInicialBase + grupo * (larguraGrupo + espacoEntreGrupos);
+                        int maxX = minX + larguraGrupo;
+                        int posicaoX = ThreadLocalRandom.current().nextInt(minX, maxX);
+                        for (Barreira barreira : barreiras.values()){
+                            if (posicaoX >= barreira.getX() && posicaoX <= barreira.getX() + 30) {
+                                posicaoX = ThreadLocalRandom.current().nextInt(minX, maxX);
+                            }
+                        }
+                        posicoesItens[item] = posicaoX;
+                        int sorteioTipo = ThreadLocalRandom.current().nextInt(1, 101);
+                        String skin = sortearSkinItem(sorteioTipo);
+                        String tipo = skin.split("_")[0];
+                        Item novoItem = new Item(tipo, "cidade", posicaoX, skin);
+                        itens.put(id, novoItem);
                     }
                 }
                 break;
@@ -131,33 +131,69 @@ public class Mapa {
         }
     }
 
-    public void itemLevouDano(String id, int dano){
-        Item item = itens.get(id);
-        if (item != null) {
-            item.levarDano(dano);
+    private String sortearSkinItem(int tipo_item) {
+        if (tipo_item >= 1 && tipo_item <= 20) {
+            // agua_1 ate agua_4
+            int variante = ThreadLocalRandom.current().nextInt(1, 5);
+            return "agua_" + variante;
+        } else if (tipo_item > 20 && tipo_item <= 39) {
+            // comida_fraca_1 ate comida_fraca_18
+            int variante = ThreadLocalRandom.current().nextInt(1, 19);
+            return "comida_fraca_" + variante;
+        } else if (tipo_item > 39 && tipo_item <= 45) {
+            // veneno_1 ate veneno_4
+            int variante = ThreadLocalRandom.current().nextInt(1, 5);
+            return "veneno_" + variante;
+        } else if (tipo_item > 45 && tipo_item <= 58) {
+            // moeda_1 ate moeda_3
+            int variante = ThreadLocalRandom.current().nextInt(1, 4);
+            return "moeda_" + variante;
+        } else if (tipo_item > 58 && tipo_item <= 68) {
+            // comida_1 ate comida_30
+            int variante = ThreadLocalRandom.current().nextInt(1, 31);
+            return "comida_" + variante;
+        } else if (tipo_item > 68 && tipo_item <= 73) {
+            // pocao_regeneracao (sem variante)
+            return "pocao_regeneracao";
+        } else if (tipo_item > 73 && tipo_item <= 78) {
+            // pocao_ataque (sem variante)
+            return "pocao_ataque";
+        } else if (tipo_item > 78 && tipo_item <= 83) {
+            // pocao_defesa (sem variante)
+            return "pocao_defesa";
+        } else if (tipo_item > 83 && tipo_item <= 88) {
+            // pocao_velocidade (sem variante)
+            return "pocao_velocidade";
+        } else if (tipo_item > 88 && tipo_item <= 95) {
+            // mel_1 ate mel_8
+            int variante = ThreadLocalRandom.current().nextInt(1, 9);
+            return "mel_" + variante;
+        } else if (tipo_item > 95 && tipo_item <= 100) {
+            // torta_1 ate torta_3
+            int variante = ThreadLocalRandom.current().nextInt(1, 4);
+            return "torta_" + variante;
+        } else {
+            // fallback: moeda_1 ate moeda_3
+            int variante = ThreadLocalRandom.current().nextInt(1, 4);
+            return "moeda_" + variante;
         }
-    }
-
-    public void removerItem(String id){
-        Item item = itens.get(id);
-        if (item != null) {
-            itens.remove(id);
-        }
-    }
-
-    public boolean itemEstaVivo(String id) {
-        Item item = itens.get(id);
-        return item.estaMorto();
     }
 
     public void carregarBarreiras(){
         switch (this.nome){
             case "cidade":
-                int QuantidadeBarreiras = 4;
+                int quantidadeGruposBarreiras = 5;
+                int quantidadeBarreirasPorGrupo = 4;
 
-                for (int i = 0; i < QuantidadeBarreiras; i++){
-                    String id = UUID.randomUUID().toString();
-                    barreiras.put(id, new Barreira("barreira", "cidade"));
+                int posicaoInicialBase = 1300;
+                int espacoEntreGrupos = 1100;
+
+                for (int i = 0; i < quantidadeGruposBarreiras; i++){
+                    for (int b = 0; b < quantidadeBarreirasPorGrupo; b++) {
+                        String id = UUID.randomUUID().toString();
+                        int minX = posicaoInicialBase + i * (espacoEntreGrupos);
+                        barreiras.put(id, new Barreira("barreira", "cidade", minX, b, id));
+                    }
                 }
                 break;
             case "prisão":
@@ -179,6 +215,57 @@ public class Mapa {
         Barreira barreira = barreiras.get(id);
         if (barreira != null) {
             barreiras.remove(id);
+        }
+    }
+
+    public void itemLevouDano(String id, int dano){
+        Item item = itens.get(id);
+        if (item != null) {
+            item.levarDano(dano);
+        }
+    }
+
+    public void pegouItem(String id){
+        Item item = itens.get(id);
+        if (item != null) {
+            itens.remove(id);
+        }
+    }
+
+    public void danoNoBoss(String id, int dano){
+        Inimigo boss = inimigos.get(id);
+        if (boss != null) {
+            boss.levarDano(dano);
+            if (!boss.estaVivo()) {
+                inimigos.remove(id);
+            }
+        }
+    }
+
+    public void adicionarInimigosBatalhaBoss1(){
+        for (int i = 0; i < 6; i++){
+            int sorteio = ThreadLocalRandom.current().nextInt(1, 4);
+            String id = UUID.randomUUID().toString();
+            Inimigo inimigo;
+            int x = i >= 3? 1200: -100;
+            int y;
+
+            if (i == 1 || i == 4){
+                y = 515;
+            } else if (i == 2 || i == 5){
+                y = 580;
+            } else {
+                y = 640;
+            }
+            inimigo = switch (sorteio) {
+                case 1 -> new Inimigo("david", x, y, id);
+                case 2 -> new Inimigo("raymond", x, y, id);
+                case 3 -> new Inimigo("rick", x, y, id);
+                case 4 -> new Inimigo("stella", x, y, id);
+                default -> new Inimigo("david", x, y, id);
+            };
+
+            inimigos.put(id, inimigo);
         }
     }
 }

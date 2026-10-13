@@ -19,18 +19,18 @@ public class GerenciadorSalas {
     private Map<String, String> jogadoresParaSala = new ConcurrentHashMap<>();
     private final ObjectMapper tradutor = new ObjectMapper();
 
-    public void criarSala(String mapa, WebSocketSession session, String personagem, String nomeCriador) throws IOException {
+    public void criarSala(String mapa, WebSocketSession session, String personagem, String nomeCriador, String skin) throws IOException {
         Sala novaSala = new Sala(mapa, nomeCriador);
-        novaSala.adicionarJogador(session ,session.getId(), personagem, nomeCriador, false);
+        novaSala.adicionarJogador(session ,session.getId(), personagem, nomeCriador, false, skin);
         jogadoresParaSala.put(session.getId(), novaSala.getId());
         salasOnline.put(novaSala.getId(), novaSala);
         novaSala.iniciarLoop();
     }
 
-    public void entrarSala(String idSala, WebSocketSession session, String personagem, String nomeJogador) throws IOException {
+    public void entrarSala(String idSala, WebSocketSession session, String personagem, String nomeJogador, String skin) throws IOException {
         Sala sala = salasOnline.get(idSala);
         if (sala != null){
-            sala.adicionarJogador(session, session.getId(), personagem, nomeJogador, true);
+            sala.adicionarJogador(session, session.getId(), personagem, nomeJogador, true, skin);
             jogadoresParaSala.put(session.getId(), sala.getId());
         }
     }
@@ -58,5 +58,12 @@ public class GerenciadorSalas {
             }
         }
         return null;
+    }
+
+    public void bossFight(WebSocketSession session) throws IOException {
+        Sala sala = getIdSalaDoJogador(session);
+        if (sala != null) {
+            sala.iniciarBatalhaComBoss();
+        }
     }
 }
