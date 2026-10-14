@@ -1,11 +1,16 @@
+linux:
 ver meu ip:
 hostname -I
 
-liberar porta no firewall:
-sudo ufw allow 8080/tcp
+windows:
+ver meu ip:
+vá no xmd e coloque: ipconfig
 
-como remover a porta do firewall:
-sudo ufw delete allow 8080/tcp
+caso precise liberar a porta 8080 no windows:
+vá no powerShell depois de executar o projeto e cole:
+New-NetFirewallRule -DisplayName "Liberar Porta 8080 Local" -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow
 
-verificar se deu certo:
-sudo ufw status
+para ver se deu certo:
+Get-NetFirewallRule -DisplayName "Liberar Porta 8080 Local"
+
+(O campo Enabled deve retornar como True).
