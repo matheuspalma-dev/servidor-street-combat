@@ -100,12 +100,20 @@ public class Decisao extends TextWebSocketHandler {
             case "tentarAtacar":
                 String skinJogador = (String) mensagemRecebida.get("skin");
                 Object golpe;
-                if (skinJogador.equals("skin_rosa") || skinJogador.equals("skin_azul") || skinJogador.equals("skin_castanho") || skinJogador.equals("chapolin")){
-                    golpe = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
-                } else { // masculino
-                    golpe = AtaqueScott.valueOf((String) mensagemRecebida.get("golpe"));
+                try {
+                    if (skinJogador.equals("skin_rosa") || skinJogador.equals("skin_azul") || skinJogador.equals("skin_castanho") || skinJogador.equals("chapolin")){
+                        golpe = AtaqueRamona.valueOf((String) mensagemRecebida.get("golpe"));
+                    } else { // masculino
+                        golpe = AtaqueScott.valueOf((String) mensagemRecebida.get("golpe"));
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Golpe inválido: " + mensagemRecebida.get("golpe"));
+                    golpe = null;
                 }
-                gerenciadorJogador.tentativaGolpe(sessionSegura, golpe);
+
+                if (golpe != null) {
+                    gerenciadorJogador.tentativaGolpe(sessionSegura, golpe);
+                }
                 break;
             case "golpearInimigo":
                 String idInimigo = (String) mensagemRecebida.get("idInimigo");

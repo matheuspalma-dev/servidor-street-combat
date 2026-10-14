@@ -62,11 +62,11 @@ public class Sala {
     public void iniciarBatalhaDoBoss() throws IOException {
         encerrarLoop();
         mapa = new Mapa("cidadeBoss", true);
+        mapa.carregarBoss();
         turno = Turno.PRIMEIRO_TURNO;
         atualizarMapas();
         atualizarInimigos();
         reposicionarJogadores();
-        mapa.carregarBoss();
     }
 
     private void reposicionarJogadores(){
@@ -125,10 +125,12 @@ public class Sala {
     // funções relacionadas a jogadores
     public void jogadorAndou(String id, int x, int y, boolean direcao) throws IOException {
         Jogador jogador = jogadores.get(id);
-        jogador.mover(x, y, direcao);
-        int maiorX = maiorXJogador();
-        adicionarInimigos(maiorX);
-        atualizarJogadores();
+        if (jogador != null) {
+            jogador.mover(x, y, direcao);
+            int maiorX = maiorXJogador();
+            adicionarInimigos(maiorX);
+            atualizarJogadores();
+        }
     }
 
     private void adicionarInimigos(int xJogador) throws IOException {
